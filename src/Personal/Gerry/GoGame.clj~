@@ -1,4 +1,4 @@
- ;Go game in clojure
+  ;Go game in clojure
  
 (ns Personal.Gerry.GoGame 
   (:use clojure.contrib.seq-utils)
@@ -6,17 +6,17 @@
   (:gen-class))
 (def *board-size* 19)
  
-(def whole-lists (ref [])) ; use as saving all played stones stones ,includes dead stones
-(defstruct stone :id :loc :liberty)  ;loc is {:x,:y} liberty default to nil, if 0,then it's dead.
+(def whole-lists (ref [])) ; use as saving all played stones stones ,includes captured stones
+(defstruct stone :id :loc :liberty)  ;loc is {:x,:y} liberty default to nil, if 0,then it's captured.
 
 
 (def black-id-groups []) ;black groups grouped by id,dead groups will be removed.
 
 (def white-id-groups [])
 
-(def w-dead-groups [])
+(def w-captured-groups [])
 
-(def b-dead-groups []) ; dead-groups move to here as backup data
+(def b-captured-groups []) ; dead-groups move to here as backup data
 
 (defn getloc-from-id [id]
      (let [s (nth @whole-lists (dec id))]
@@ -33,6 +33,12 @@
 
 (defn stone-in-lists? [loc]
   (some #(= (:loc %) loc) @whole-lists))
+
+(defn get-neighbors-id [stone]
+  (let [neigs (get-neighbors stone)]
+    [(getid-from-loc (:left n)) (getid-from-loc (:right n)) ; map to hashmap?
+     (getid-from-loc (:down n)) (getid-from-loc (:up n))]))
+						
 
 
 
@@ -67,7 +73,7 @@
 (defn merge-inner-idgroups [id groups] ;id  is new playing stone id,maybe cause to merge groups 
   (let [with-out-id  (filter #(not (includes? % id)) groups)
         with-id  (filter #(includes? % id) groups)]
-       (concat  with-out-x (vec (set (flatten with-x))))))
+       (concat  (vec with-out-x) (vec (set (flatten with-x))))))
 
 
 (defn play [id x y]    ;; not finish
