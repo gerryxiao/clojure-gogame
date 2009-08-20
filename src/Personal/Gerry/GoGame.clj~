@@ -1,7 +1,8 @@
-  ;Go game in clojure
+   ;Go game in clojure
  
 (ns Personal.Gerry.GoGame 
   (:use clojure.contrib.seq-utils)
+  (:use clojure.contrib.duck-stream)
   (:require [clojure.zip :as zip])
   (:gen-class))
 (def *board-size* 19)
@@ -74,6 +75,16 @@
   (let [with-out-id  (filter #(not (includes? % id)) groups)
         with-id  (filter #(includes? % id) groups)]
        (concat  (vec with-out-x) (vec (set (flatten with-x))))))
+
+;; helper functions for serialization
+;; struct map can't be serialize?
+(defn save-to-file [data filename]
+  (spit filename
+	(with-out-str (pr data))))
+(defn load-data-from-file [filename]
+  (with-in-str (slurp filename)
+	       (read)))
+;;
 
 
 (defn play [id x y]    ;; not finish
