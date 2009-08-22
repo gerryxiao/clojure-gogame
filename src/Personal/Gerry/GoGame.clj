@@ -1,4 +1,4 @@
-   ;Go game in clojure
+ ;Go game in clojure
 ;围棋游戏
  
 (ns Personal.Gerry.GoGame 
@@ -44,8 +44,9 @@
 
 
 
-(defn liberty-of-stone [stone]
-  (let [n (get-neighbors stone)]
+(defn liberty-of-stone [id]
+  (let [stone (nth @whole-lists (dec id))
+	n (get-neighbors stone)]
     (+ (if (stone-in-lists?  (:left n) ) 0 1 )
        (if (stone-in-lists?  (:right n) ) 0 1 )
        (if (stone-in-lists?  (:up n) ) 0 1 )
@@ -61,13 +62,15 @@
 	 (for [s groups] 
 	   (if (includes? s id-of-neighbors)(conj s id) s))))
 
-(defn stone-to-group [stone]
-  (let [ids (get-neighbors-id stone)]
+(defn stone-to-group [stone] ;; same color group
+  (let [idss (get-neighbors-id stone)
+	ids (if (odd? (:id stone)) (filter #(odd? %) idss) (filter #(even? %) idss))]
+			   
     (if  (or (nil? ids) (empty? ids))  (swap! (if (odd? (:id stone)) black-id-groups white-id-groups) conj  [(:id stone)])
 
      (doseq [id ids]
-      (if (and (odd? (:id stone)) (odd? id)) (swap! black-id-groups stone-to-idgroup id (:id stone))
-	  (if (and (even? (:id stone))(even? id)) (swap! white-id-groups stone-to-idgroup id (:id stone))))))))
+      (if (odd? (:id stone)) (swap! black-id-groups stone-to-idgroup id (:id stone))
+	  (swap! white-id-groups stone-to-idgroup id (:id stone)))))))
 
 (defn merge-inner-idgroups [groups id] ;id  is new playing stone id,maybe cause to merge groups 
   (let [with-out-id  (filter #(not (includes? % id)) groups)
@@ -87,6 +90,24 @@
   (with-in-str (slurp filename)
 	       (read)))
 
+(defn scan-groups-liberty [groups]
+  (vec (filter #(not= (liberty-of-group %) 0) groups)))
+
+(defn get-dead-ids [groups]
+  (vec (filter #(= (liberty-of-group %) 0) groups)))
+
+(defn remove-dead-stones [groups]
+  (swap! groups scan-groups-liberty))
+
+(defn mark-deadstones [groups]
+  (let [deadstones (get-dead-ids groups)]
+    (if (not (empty? deadstones))
+      (dosync
+       (doseq [id (flatten deadstones)]
+	 (let [loc (getloc-from-id id)]
+	  (ref-set whole-lists assoc (dec id) id loc 0)))))))
+
+
 (defn play-one-stone [id loc]
   (let [s (struct stone id loc)
 	groups (if (odd? id) black-id-groups white-id-groups)]
@@ -94,5 +115,10 @@
       (stone-to-group s)
       (merge-inner-groups groups id)
       (dosync
-       (ref-set whole-lists (conj @whole-lists s))))))
+       (ref-set whole-lists (conj @whole-lists s)))
+      (remove-dead-stones groups)
+      (mark-deadstones @groups))))
+
+(defn go [id x y]
+  (play-one-stone id {:x x :y y}))
 	
