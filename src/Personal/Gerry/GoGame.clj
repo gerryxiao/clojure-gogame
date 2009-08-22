@@ -102,23 +102,43 @@
 (defn mark-deadstones [groups]
   (let [deadstones (get-dead-ids groups)]
     (if (not (empty? deadstones))
-      (dosync
        (doseq [id (flatten deadstones)]
 	 (let [loc (getloc-from-id id)]
-	  (ref-set whole-lists assoc (dec id) id loc 0)))))))
+	  (dosync ( ref-set whole-lists (assoc @whole-lists (dec id) (struct stone id loc 0)))))))))
+
+(defn test-content [msg]
+  (do (println msg)
+      (println "whole-list is: " @whole-lists)
+      ;(println "groups is : " @groups)
+      (println "black is : " @black-id-groups)
+      (println "white is : " @white-id-groups)))
+  
 
 
 (defn play-one-stone [id loc]
   (let [s (struct stone id loc)
 	groups (if (odd? id) black-id-groups white-id-groups)]
-    (do
-      (stone-to-group s)
-      (merge-inner-groups groups id)
-      (dosync
-       (ref-set whole-lists (conj @whole-lists s)))
+    (stone-to-group s)
+    (merge-inner-groups groups id)
+    (dosync
+     (ref-set whole-lists (conj @whole-lists s)))
+    (test-content "before mark and remove")
+    (let [groups (if (odd? id) white-id-groups black-id-groups)]
+      (println "groups is " @groups)
+      (mark-deadstones @groups)
+      (println @whole-lists)
       (remove-dead-stones groups)
-      (mark-deadstones @groups))))
+      (test-content "after!" ))))
 
 (defn go [id x y]
   (play-one-stone id {:x x :y y}))
-	
+
+(defn test-go []
+     (go 1 4 4)
+     (go 2 4 5)
+     (go 3 9 10)
+     (go 4 4 3)
+     (go 5 10 10)
+     (go 6 3 4)
+     (go 7 12 12)
+     (go 8 5 4))
