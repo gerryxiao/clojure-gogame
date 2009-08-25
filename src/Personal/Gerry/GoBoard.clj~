@@ -1,0 +1,22 @@
+(import '(javax.swing JFrame JLabel))
+(import '(java.awt Color Font Graphics Canvas))
+(import '(java.awt.event MouseEvent MouseAdapter))
+(def main-window (new JFrame  "Clojure Go Game Test"))
+(def board (proxy [Canvas] []
+	     (paint [g]
+		    (doseq [x (range 20 780 40)]
+		      (.drawLine g 20 x 740 x)
+		      (.drawLine g x 20 x 740)))))
+(.addMouseListener board (proxy [MouseAdapter] []
+				 (mousePressed [e]
+				      (println {:x (.getX e) :y (.getY e)})
+				      (.repaint board)
+				      (println "repaint..."))))
+
+(doto main-window
+  (.setSize 900 900)
+  (.add board)
+  (.pack)
+  (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
+  (.setVisible true))
+		      
