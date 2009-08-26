@@ -4,7 +4,10 @@
 (ns Personal.Gerry.GoGame 
   (:use [clojure.contrib seq-utils duck-streams])
   (:require [clojure.zip :as zip])
+  (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas) 
+	   (javax.swing JFrame) (java.awt.event MouseAdapter MouseEvent))
   (:gen-class))
+
 (def *board-size* 19)
  
 (def whole-lists (ref [])) ; use as saving all played stones stones ,includes captured stones 按序储存所有已下棋子包括死子
@@ -142,3 +145,4 @@
      (go 6 3 4)
      (go 7 12 12)
      (go 8 5 4))
+(load "GoBoard")

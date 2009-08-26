@@ -1,7 +1,4 @@
-(import '(javax.swing JFrame JLabel))
-(import '(java.awt Color Font Graphics Canvas))
-(import '(java.awt.event MouseEvent MouseAdapter))
-(def main-window (new JFrame  "Clojure Go Game Test"))
+   (def main-window (new JFrame  "Clojure Go Game Test"))
 (defn abjust-cord [x]
   (/ (- x 20) 40))
 
@@ -11,15 +8,32 @@
 
 (def board (proxy [Canvas] []
 	     (paint [g]
-		    (doseq [x (range 20 780 40)]
-		      (.drawLine g 20 x 740 x)
-		      (.drawLine g x 20 x 740))
-		    (doseq [stone @whole-lists]
-		      (when (= (:liberty stone) nil)
-			(.drawOval g (- (:x (get-stone-cord stone)) 15) (- (:y (get-stone-cord stone)) 15) 30 30)
-			(if (odd? (:id stone)) (.setColor g Color/BLACK)
-				  (.setColor g Color/WHITE))
-			(.fillOval g (- (:x (get-stone-cord stone)) 15) (- (:y (get-stone-cord stone)) 15) 30 30))))))
+		    (let [g2d #^Graphics2D g]
+		      ;(.setStroke g2d (BasicStroke.(float 5)))
+		      (.draw3DRect g2d 1 1 760 760 true)
+		      (.setColor g2d Color/yellow)
+		      (.fill3DRect g2d 1 1 760 760 true)
+		      (.setColor g2d Color/BLACK)
+		      (.setStroke g2d (BasicStroke. (float 1)))
+		      (doseq [x (range 20 780 40)]
+			(.draw g2d (new Line2D$Float 20 x 740 x))
+			(.draw g2d (new Line2D$Float x 20 x 740)))
+		      (doseq [stone @whole-lists]
+			(when (= (:liberty stone) nil)
+			  (.draw g2d (Ellipse2D$Float. (- (:x (get-stone-cord stone)) 20) (- (:y (get-stone-cord stone)) 20) 40 40))
+			  (if (odd? (:id stone)) (.setColor g2d Color/BLACK)
+			      (.setColor g2d Color/WHITE))
+			  (.fill g2d (Ellipse2D$Float. (- (:x (get-stone-cord stone)) 20) (- (:y (get-stone-cord stone)) 20) 40 40))))))
+	     (update [g]
+		     (let [offscreenimage (.createImage this 800 800)
+			   graphics #^Graphics2D (.getGraphics offscreenimage)]
+		       (.setColor graphics (.getBackground this))
+		       (.fillRect graphics 0 0 800 800)
+		       (.setColor graphics (.getColor g))
+		       (.paint this graphics)
+		       (.drawImage g offscreenimage 0 0 Color/black  nil)))))
+
+		       
 (def Id (atom 0))		      
 
 (.addMouseListener board (proxy [MouseAdapter] []
@@ -34,7 +48,7 @@
 
 (defn play-go []
   (doto main-window
-    (.setSize 900 900)
+    (.setSize 800 800)
     (.add board)
     (.pack)
     (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
