@@ -1,11 +1,11 @@
- ;Go game in clojure
+;Go game in clojure
 ;围棋游戏
  
 (ns Personal.Gerry.GoGame 
   (:use [clojure.contrib seq-utils duck-streams])
   (:require [clojure.zip :as zip])
-  (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas) 
-	   (javax.swing JFrame) (java.awt.event MouseAdapter MouseEvent)
+  (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas Dimension) 
+	   (javax.swing JFrame JPanel) (java.awt.event MouseAdapter MouseEvent)
 	   (java.awt.geom Line2D$Float Ellipse2D$Float ))
   (:gen-class))
 
@@ -38,7 +38,8 @@
 	:down (if (= y 0) nil {:x x :y (dec y)}) :up (if (= y 18) nil { :x x :y (inc y)})}))
 
 (defn stone-in-lists? [loc]
-  (some #(and (= (:loc %) loc) (= nil (:liberty %))) @whole-lists))  ;;not dead
+  (if (nil? loc) true
+      (some #(and (= (:loc %) loc) (= nil (:liberty %))) @whole-lists)))  ;;not dead
 
 (defn get-neighbors-id [stone]
   (let [n (get-neighbors stone)
@@ -52,7 +53,7 @@
   (let [stone (nth @whole-lists (dec id))
 	n (get-neighbors stone)]
     (+ (if (stone-in-lists?  (:left n) ) 0 1 )
-       (if (stone-in-lists?  (:right n) ) 0 1 )
+       (if (stone-in-lists?  (:right n) ) 0 1 )  ;;problem is here
        (if (stone-in-lists?  (:up n) ) 0 1 )
        (if (stone-in-lists?  (:down n)) 0 1 ))))
 
@@ -146,4 +147,4 @@
      (go 6 3 4)
      (go 7 12 12)
      (go 8 5 4))
-(load "GoBoard")
+(load "GoBoard1")

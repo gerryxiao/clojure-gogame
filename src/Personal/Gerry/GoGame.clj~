@@ -5,7 +5,8 @@
   (:use [clojure.contrib seq-utils duck-streams])
   (:require [clojure.zip :as zip])
   (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas) 
-	   (javax.swing JFrame) (java.awt.event MouseAdapter MouseEvent))
+	   (javax.swing JFrame) (java.awt.event MouseAdapter MouseEvent)
+	   (java.awt.geom Line2D$Float Ellipse2D$Float ))
   (:gen-class))
 
 (def *board-size* 19)
