@@ -1,4 +1,5 @@
 (def main-window (new JFrame  "Clojure Go Game Test"))
+(def paint-id? true)
 
 (defn nearby [a b]
   (and (> a (* 0.95 b)) (< a (* 1.05 b))))
@@ -15,6 +16,11 @@
 
 (defn get-stone-cord [stone u]
   (trans-coord1 (:x (:loc stone)) (:y (:loc stone)) u))
+(defn get-x [stone u]
+  (- (:x (get-stone-cord stone u)) (/ u 2.0)))
+(defn get-y [stone u]
+  (- (:y (get-stone-cord stone u)) (/ u 2.0)))
+
 
 (def board (proxy [JPanel] []
 	     (paintComponent  [g]
@@ -23,9 +29,11 @@
 			  w (.getWidth this)
 			  u (/ w 20.0)
 			  extent (range u (* u 20) u)
-			  coords (for [x extent y extent] {:x x :y y})]
+			  coords (for [x extent y extent] {:x x :y y})
+			  last-stone (last @whole-lists)]
+		      (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
 		      (.draw3DRect g2d 1 1 w w true)
-		      (.setColor g2d Color/yellow)
+		      (.setColor g2d Color/lightGray)
 		      (.fill3DRect g2d 1 1 w w true)
 		      (.setColor g2d Color/BLACK)
 		      (.setStroke g2d (BasicStroke. (float 1)))
@@ -34,10 +42,19 @@
 			(.draw g2d (new Line2D$Float x u x (* 19 u))))
 		      (doseq [stone @whole-lists]
 			(when (= (:liberty stone) nil)
-			  (.draw g2d (Ellipse2D$Float. (- (:x (get-stone-cord stone u)) (/ u 2.0)) (- (:y (get-stone-cord stone u)) (/ u 2.0)) u u))
-			  (if (odd? (:id stone)) (.setColor g2d Color/BLACK)
-			      (.setColor g2d Color/WHITE))
-			  (.fill g2d (Ellipse2D$Float. (- (:x (get-stone-cord stone u)) (/ u 2.0)) (- (:y (get-stone-cord stone u)) (/ u 2.0)) u u))))))
+			  (.setColor g2d Color/black)
+			  (.draw g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
+			  (if (odd? (:id stone)) (.setColor g2d Color/black)
+			      (.setColor g2d Color/white))
+			  (.fill g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
+			  (when paint-id?
+			    (.setColor g2d Color/red)
+			    (.setFont g2d (Font. "Serif" Font/PLAIN 12))
+			    (.drawString g2d (.toString (:id stone)) (float (:x (get-stone-cord stone u))) (float (:y (get-stone-cord stone u)))))))
+			
+		      (when (not (nil? last-stone))
+			(if (odd? (:id last-stone)) (.setColor g2d Color/white) (.setColor g2d Color/black))
+			(.draw g2d (Ellipse2D$Float. (+ (get-x last-stone  u)(/ u 4.0))(+ (get-y last-stone  u)(/ u 4.0)) (/ u 2.0) (/ u 2.0))))))
 	     (getPreferredSize []
 			      (Dimension. 600 600))))
 

@@ -10,8 +10,9 @@
 	     (paint [g]
 		    (let [g2d #^Graphics2D g]
 		      ;(.setStroke g2d (BasicStroke.(float 5)))
+		      (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RendringHints/VALUE_ANTIALIAS_ON)
 		      (.draw3DRect g2d 1 1 760 760 true)
-		      (.setColor g2d Color/yellow)
+		      (.setColor g2d Color/cyan)
 		      (.fill3DRect g2d 1 1 760 760 true)
 		      (.setColor g2d Color/BLACK)
 		      (.setStroke g2d (BasicStroke. (float 1)))
