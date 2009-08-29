@@ -1,3 +1,6 @@
+ (import '(java.awt Container Image MediaTracker Toolkit)
+	'(java.net URL) '(javax.swing JMenuBar JMenu JMenuItem JCheckBoxMenuItem)
+	'(java.awt.event KeyEvent))
 (def main-window (new JFrame  "Clojure 围棋游戏 作者：gerryxiao@gmail.com"))
 (def paint-id? true)
 
@@ -21,6 +24,13 @@
 (defn get-y [stone u]
   (- (:y (get-stone-cord stone u)) (/ u 2.0)))
 
+(defn loadImage [url]
+  (let [image (.getImage (.getDefaultTookit Toolkit) url)
+	mediaTracker (MediaTracker. (Container.))]
+    (.addImage mediaTracker image 0)
+    (.waitForID mediaTracker 0)
+     image))
+
 
 (def board (proxy [JPanel] []
 	     (paintComponent  [g]
@@ -33,7 +43,8 @@
 			  last-stone (last @whole-lists)]
 		      (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
 		      (.draw3DRect g2d 0 0 w w true)
-		      (.setColor g2d Color/lightGray)
+		      ;(.setColor g2d Color/lightGray)
+		      (.setColor g2d (Color. 212 167 102))
 		      (.fill3DRect g2d 0 0 w w true)
 		      (.setColor g2d Color/BLACK)
 		      (.setStroke g2d (BasicStroke. (float 1)))
@@ -88,12 +99,25 @@
 						  (.repaint board)
 				      
 						  (println "repaint...")))))))))
+(def menu-bar (JMenuBar.))
+(def file-menu (JMenu. "File"))
+(def option-menu (JMenu. "Option"))
+(def open-menuitem (JMenuItem. "Save" KeyEvent/VK_T))
+
+(defn menu-init []
+  (.add file-menu open-menuitem)
+  (.add menu-bar file-menu)
+  (.add menu-bar option-menu))
+
 
 (defn play-go []
   (.setBorder board (BevelBorder. BevelBorder/RAISED))
+  (menu-init)
   (doto main-window
+    (.setJMenuBar menu-bar)
     (.add board)
-    (.setSize 800 820)
+    ;(.add menu-bar)
+    (.setSize 800 840)
     ;;(.pack) it seems swing component dont need pack
     (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
     (.setVisible true)))

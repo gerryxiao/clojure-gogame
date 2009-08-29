@@ -1,4 +1,6 @@
- (def main-window (new JFrame  "Clojure 围棋游戏 作者：gerryxiao@gmail.com"))
+(import '(java.awt Container Image MediaTracker Toolkit)
+	'(java.net URL))
+(def main-window (new JFrame  "Clojure 围棋游戏 作者：gerryxiao@gmail.com"))
 (def paint-id? true)
 
 (defn nearby [a b]
@@ -21,6 +23,13 @@
 (defn get-y [stone u]
   (- (:y (get-stone-cord stone u)) (/ u 2.0)))
 
+(defn loadImage [url]
+  (let [image (.getImage (.getDefaultTookit Toolkit) url)
+	mediaTracker (MediaTracker. (Container.))]
+    (.addImage mediaTracker image 0)
+    (.waitForID mediaTracker 0)
+     image))
+
 
 (def board (proxy [JPanel] []
 	     (paintComponent  [g]
@@ -33,7 +42,8 @@
 			  last-stone (last @whole-lists)]
 		      (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
 		      (.draw3DRect g2d 0 0 w w true)
-		      (.setColor g2d Color/lightGray)
+		      ;(.setColor g2d Color/lightGray)
+		      (.setColor g2d (Color. 212 167 102))
 		      (.fill3DRect g2d 0 0 w w true)
 		      (.setColor g2d Color/BLACK)
 		      (.setStroke g2d (BasicStroke. (float 1)))
@@ -54,11 +64,11 @@
 			      (.setColor g2d Color/white))
 			  (.fill g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
 			  (when paint-id?
-			    (.setColor g2d Color/red)
+			    (.setColor g2d Color/green)
 			    (.setFont g2d (Font. "Serif" Font/PLAIN 12))
 			    (.drawString g2d (.toString (:id stone)) (float (:x (get-stone-cord stone u))) (float (:y (get-stone-cord stone u)))))))
 			
-		      (when (not (nil? last-stone))
+		      (when (and (not (nil? last-stone)) (not paint-id?))
 			(if (odd? (:id last-stone)) (.setColor g2d Color/white) (.setColor g2d Color/black))
 			(.draw g2d (Ellipse2D$Float. (+ (get-x last-stone  u)(/ u 4.0))(+ (get-y last-stone  u)(/ u 4.0)) (/ u 2.0) (/ u 2.0))))))
 	     (getPreferredSize []
