@@ -1,4 +1,4 @@
-(def main-window (new JFrame  "Clojure Go Game Test"))
+(def main-window (new JFrame  "Clojure 围棋游戏 作者：gerryxiao@gmail.com"))
 (def paint-id? true)
 
 (defn nearby [a b]
@@ -32,14 +32,20 @@
 			  coords (for [x extent y extent] {:x x :y y})
 			  last-stone (last @whole-lists)]
 		      (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
-		      (.draw3DRect g2d 1 1 w w true)
+		      (.draw3DRect g2d 0 0 w w true)
 		      (.setColor g2d Color/lightGray)
-		      (.fill3DRect g2d 1 1 w w true)
+		      (.fill3DRect g2d 0 0 w w true)
 		      (.setColor g2d Color/BLACK)
 		      (.setStroke g2d (BasicStroke. (float 1)))
 		      (doseq [x extent]
 			(.draw g2d (new Line2D$Float u x (* 19 u) x))
 			(.draw g2d (new Line2D$Float x u x (* 19 u))))
+		      (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 3.9) (* u 0.2) (* u 0.2)))
+		      (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 15.9) (* u 0.2) (* u 0.2)))
+		      (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 3.9) (* u 0.2) (* u 0.2)))   ;;draw 5 points:xing and tianyuan
+		      (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 15.9) (* u 0.2) (* u 0.2)))
+		      (.draw g2d (Ellipse2D$Float. (* u 9.9) (* u 9.9) (* u 0.2) (* u 0.2)))
+		      
 		      (doseq [stone @whole-lists]
 			(when (= (:liberty stone) nil)
 			  (.setColor g2d Color/black)
@@ -48,11 +54,11 @@
 			      (.setColor g2d Color/white))
 			  (.fill g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
 			  (when paint-id?
-			    (.setColor g2d Color/red)
+			    (.setColor g2d Color/green)
 			    (.setFont g2d (Font. "Serif" Font/PLAIN 12))
 			    (.drawString g2d (.toString (:id stone)) (float (:x (get-stone-cord stone u))) (float (:y (get-stone-cord stone u)))))))
 			
-		      (when (not (nil? last-stone))
+		      (when (and (not (nil? last-stone)) (not paint-id?))
 			(if (odd? (:id last-stone)) (.setColor g2d Color/white) (.setColor g2d Color/black))
 			(.draw g2d (Ellipse2D$Float. (+ (get-x last-stone  u)(/ u 4.0))(+ (get-y last-stone  u)(/ u 4.0)) (/ u 2.0) (/ u 2.0))))))
 	     (getPreferredSize []
@@ -84,9 +90,10 @@
 						  (println "repaint...")))))))))
 
 (defn play-go []
+  (.setBorder board (BevelBorder. BevelBorder/RAISED))
   (doto main-window
     (.add board)
-    (.setSize 800 800)
+    (.setSize 800 820)
     ;;(.pack) it seems swing component dont need pack
     (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
     (.setVisible true)))

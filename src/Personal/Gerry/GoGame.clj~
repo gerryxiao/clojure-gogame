@@ -4,7 +4,8 @@
 (ns Personal.Gerry.GoGame 
   (:use [clojure.contrib seq-utils duck-streams])
   (:require [clojure.zip :as zip])
-  (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas Dimension) 
+  (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas Dimension RenderingHints)
+	   (javax.swing.border BevelBorder)
 	   (javax.swing JFrame JPanel) (java.awt.event MouseAdapter MouseEvent)
 	   (java.awt.geom Line2D$Float Ellipse2D$Float ))
   (:gen-class))

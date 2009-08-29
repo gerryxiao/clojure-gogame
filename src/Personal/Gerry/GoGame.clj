@@ -4,7 +4,8 @@
 (ns Personal.Gerry.GoGame 
   (:use [clojure.contrib seq-utils duck-streams])
   (:require [clojure.zip :as zip])
-  (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas Dimension RenderingHints) 
+  (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas Dimension RenderingHints)
+	   (javax.swing.border BevelBorder)
 	   (javax.swing JFrame JPanel) (java.awt.event MouseAdapter MouseEvent)
 	   (java.awt.geom Line2D$Float Ellipse2D$Float ))
   (:gen-class))
@@ -19,9 +20,9 @@
 
 (def white-id-groups (atom []))
 
-;(def w-captured-groups [])
+(def w-captured-groups (atom []))
 
-;(def b-captured-groups []) ; dead-groups move to here as backup data
+(def b-captured-groups (atom [])) ; dead-groups move to here as backup data
 
 (defn getloc-from-id [id]
      (let [s (nth @whole-lists (dec id))]
@@ -53,7 +54,7 @@
   (let [stone (nth @whole-lists (dec id))
 	n (get-neighbors stone)]
     (+ (if (stone-in-lists?  (:left n) ) 0 1 )
-       (if (stone-in-lists?  (:right n) ) 0 1 )  ;;problem is here
+       (if (stone-in-lists?  (:right n) ) 0 1 )  ;;problem is here,solved
        (if (stone-in-lists?  (:up n) ) 0 1 )
        (if (stone-in-lists?  (:down n)) 0 1 ))))
 
@@ -104,6 +105,11 @@
 (defn remove-dead-stones [groups]
   (swap! groups scan-groups-liberty))
 
+(defn move-dead-stones [groups back]  ;move dead stones to back vector
+  (let [ids (flatten (get-dead-ids groups))]
+    (when (not (empty? ids))
+      (swap! back into ids))))
+
 (defn mark-deadstones [groups]
   (let [deadstones (get-dead-ids groups)]
     (if (not (empty? deadstones))
@@ -113,11 +119,12 @@
 
 (defn test-content [msg]
   (do (println msg)
-      (println "whole-list is: " @whole-lists)
-      ;(println "groups is : " @groups)
+      ;(println "whole-list is: " @whole-lists)
       (println "black is : " @black-id-groups)
-      (println "white is : " @white-id-groups)))
-  
+      (println "white is : " @white-id-groups)
+      (println "dead blacks: " @w-captured-groups)
+      (println "dead whites: " @b-captured-groups)))
+
 
 
 (defn play-one-stone [id loc]
@@ -128,12 +135,13 @@
     (dosync
      (ref-set whole-lists (conj @whole-lists s)))
     (test-content "before mark and remove")
-    (let [groups (if (odd? id) white-id-groups black-id-groups)]
-      (println "groups is " @groups)
+    (let [groups (if (odd? id) white-id-groups black-id-groups)
+	  back (if (odd? id) b-captured-groups w-captured-groups)]
+      (move-dead-stones @groups back)
       (mark-deadstones @groups)
       (println @whole-lists)
       (remove-dead-stones groups)
-      (test-content "after!" ))))
+      (test-content "after remove!" ))))
 
 (defn go [id x y]
   (play-one-stone id {:x x :y y}))
