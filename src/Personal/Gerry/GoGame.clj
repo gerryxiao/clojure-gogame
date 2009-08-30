@@ -4,7 +4,7 @@
 (ns Personal.Gerry.GoGame 
   (:use [clojure.contrib seq-utils duck-streams])
   (:require [clojure.zip :as zip])
-  (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas Dimension RenderingHints)
+  (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas Dimension RenderingHints BorderLayout)
 	   (javax.swing.border BevelBorder)
 	   (javax.swing JFrame JPanel) (java.awt.event MouseAdapter MouseEvent)
 	   (java.awt.geom Line2D$Float Ellipse2D$Float ))
@@ -13,8 +13,10 @@
 (def *board-size* 19)
  
 (def whole-lists (ref [])) ; use as saving all played stones stones ,includes captured stones 按序储存所有已下棋子包括死子
+
 (defstruct stone :id :loc :liberty)  ;loc is {:x,:y} liberty default to nil, if 0,then it's captured.死子气为0
 
+(def snapshots (atom []))
 
 (def black-id-groups (atom [])) ;black groups grouped by id,dead groups will be removed. [ [1 2 3]]
 
@@ -125,7 +127,20 @@
       (println "dead blacks: " @w-captured-groups)
       (println "dead whites: " @b-captured-groups)))
 
+(defstruct snapshot :id :lists :bgroups :wgroups :bdead-grpus :wdead-groups)
+(defn save-snapshot [id lists bg wg bdg wdg]
+  (let [snap (struct snapshot id lists bg wg bdg wdg)]
+    (swap! snapshots conj snap)))
 
+(defn get-snapshot [id]
+  (let [snap (get @snapshots (dec id) )]
+    (compare-and-set! black-id-groups @black-id-groups (:bgroups snap))
+    (compare-and-set! white-id-groups @white-id-groups (:wgroups snap))
+    (compare-and-set! b-captured-groups @b-captured-groups (:bdead-groups snap))
+    (compare-and-set! w-captured-groups @w-captured-groups (:wdead-groups snap))
+    (dosync 
+     (ref-set whole-lists (:lists snap)))))
+		      
 
 (defn play-one-stone [id loc]
   (let [s (struct stone id loc)
@@ -141,18 +156,14 @@
       (mark-deadstones @groups)
       (println @whole-lists)
       (remove-dead-stones groups)
+      (save-snapshot id @whole-lists @black-id-groups @white-id-groups @b-captured-groups @w-captured-groups)
       (test-content "after remove!" ))))
+
 
 (defn go [id x y]
   (play-one-stone id {:x x :y y}))
 
-(defn test-go []
-     (go 1 4 4)
-     (go 2 4 5)
-     (go 3 9 10)
-     (go 4 4 3)
-     (go 5 10 10)
-     (go 6 3 4)
-     (go 7 12 12)
-     (go 8 5 4))
 (load "GoBoard1")
+
+(defn -main []
+  (play-go))

@@ -1,8 +1,39 @@
+ (in-ns 'Personal.Gerry.GoGame)
  (import '(java.awt Container Image MediaTracker Toolkit)
-	'(java.net URL) '(javax.swing JMenuBar JMenu JMenuItem JCheckBoxMenuItem)
-	'(java.awt.event KeyEvent))
-(def main-window (new JFrame  "Clojure 围棋游戏 作者：gerryxiao@gmail.com"))
-(def paint-id? true)
+	'(java.net URL) '(javax.swing JMenuBar JMenu JMenuItem JCheckBoxMenuItem 
+				      JToolBar JToolBar$Separator JButton ImageIcon)
+	'(java.awt.event KeyEvent ActionListener))
+
+(def Id (atom 0))
+
+(def main-window (proxy [JFrame ActionListener] [ "Clojure 围棋游戏 作者：gerryxiao@gmail.com"]
+		   (actionPerformed [e]
+				    (when (and (not (empty? @snapshots)) (.equals (.getActionCommand e) "previous"))
+				      (get-snapshot (dec @Id))
+				      (swap! Id dec)
+				      (.repaint this))
+				     				     		      
+				    (when (and (.equals (.getActionCommand e) "next") (not= (count @snapshots) @Id))
+				      (get-snapshot (inc @Id))
+				      (swap! Id inc )
+				      (.repaint this))
+				      
+				    (when (.equals (.getActionCommand e) "last")
+				      (get-snapshot (count @snapshots))
+				      (compare-and-set! Id @Id (count @snapshots))
+				      (.repaint this))
+				      
+				    (when (.equals (.getActionCommand e) "first")
+				      (get-snapshot 1)
+				      (compare-and-set! Id @Id 1)
+				      (.repaint this)))))
+				      
+				      
+				      
+				      
+(def paint-id? false)
+
+
 
 (defn nearby [a b]
   (and (> a (* 0.95 b)) (< a (* 1.05 b))))
@@ -43,7 +74,6 @@
 			  last-stone (last @whole-lists)]
 		      (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
 		      (.draw3DRect g2d 0 0 w w true)
-		      ;(.setColor g2d Color/lightGray)
 		      (.setColor g2d (Color. 212 167 102))
 		      (.fill3DRect g2d 0 0 w w true)
 		      (.setColor g2d Color/BLACK)
@@ -67,16 +97,18 @@
 			  (when paint-id?
 			    (.setColor g2d Color/green)
 			    (.setFont g2d (Font. "Serif" Font/PLAIN 12))
-			    (.drawString g2d (.toString (:id stone)) (float (:x (get-stone-cord stone u))) (float (:y (get-stone-cord stone u)))))))
+			    (.drawString g2d (.toString (:id stone)) (float (:x (get-stone-cord stone u)))
+					 (float (:y (get-stone-cord stone u)))))))
 			
 		      (when (and (not (nil? last-stone)) (not paint-id?))
 			(if (odd? (:id last-stone)) (.setColor g2d Color/white) (.setColor g2d Color/black))
-			(.draw g2d (Ellipse2D$Float. (+ (get-x last-stone  u)(/ u 4.0))(+ (get-y last-stone  u)(/ u 4.0)) (/ u 2.0) (/ u 2.0))))))
+			(.draw g2d (Ellipse2D$Float. (+ (get-x last-stone  u)(/ u 4.0))
+						     (+ (get-y last-stone  u)(/ u 4.0)) (/ u 2.0) (/ u 2.0))))))
 	     (getPreferredSize []
-			      (Dimension. 600 600))))
+			      (Dimension. 500 500))))
 
 		       
-(def Id (atom 0))		      
+		      
 
 (.addMouseListener board (proxy [MouseAdapter] []
 				 (mousePressed [e]
@@ -110,15 +142,39 @@
   (.add menu-bar option-menu))
 
 
+
+(defn navigate-button [imagename actioncommand tooltiptext alttext]
+  (let [ img-loc (str "images/" imagename ".png")
+	button (JButton.)]
+    (.setActionCommand button actioncommand)
+    (.addActionListener button main-window) ;;wait to add 
+    (.setIcon button (ImageIcon. img-loc))
+    button))
+
+(defn addButtons [jt]
+  (let [button1 (navigate-button "previous" "previous" "previous step" "previous")
+	button2 (navigate-button "next" "next" "next step " "next")
+	button3 (navigate-button "first" "first" "go to first" "first")
+	button4 (navigate-button "last" "last" "go to last" "last")]
+    (.add jt button1)
+    (.add jt button2)
+    (.add jt button3)
+    (.add jt button4)))
+ 
+(def toolbar (JToolBar. "oops"))
+
+
 (defn play-go []
   (.setBorder board (BevelBorder. BevelBorder/RAISED))
   (menu-init)
+  (addButtons toolbar)
   (doto main-window
     (.setJMenuBar menu-bar)
-    (.add board)
+    (.add board BorderLayout/CENTER)
+    (.add toolbar BorderLayout/SOUTH)
     ;(.add menu-bar)
-    (.setSize 800 840)
-    ;;(.pack) it seems swing component dont need pack
+    (.setSize 800 900)
+    ;(.pack) ;it seems swing component dont need pack
     (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
     (.setVisible true)))
 		      
