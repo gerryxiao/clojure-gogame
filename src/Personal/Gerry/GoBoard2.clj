@@ -1,4 +1,4 @@
- (in-ns 'Personal.Gerry.GoGame)
+  (in-ns 'Personal.Gerry.GoGame)
  (import '(java.awt Container Image MediaTracker Toolkit)
 	'(java.net URL) '(javax.swing JMenuBar JMenu JMenuItem JCheckBoxMenuItem 
 				      JToolBar JToolBar$Separator JButton ImageIcon)
@@ -56,7 +56,7 @@
   (- (:y (get-stone-cord stone u)) (/ u 2.0)))
 
 (defn loadImage [url]
-  (let [image (.getImage (.getDefaultTookit Toolkit) url)
+  (let [image (.getImage (Toolkit/getDefaultToolkit) url)
 	mediaTracker (MediaTracker. (Container.))]
     (.addImage mediaTracker image 0)
     (.waitForID mediaTracker 0)
@@ -89,11 +89,14 @@
 		      
 		      (doseq [stone @whole-lists]
 			(when (= (:liberty stone) nil)
-			  (.setColor g2d Color/black)
-			  (.draw g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
-			  (if (odd? (:id stone)) (.setColor g2d Color/black)
-			      (.setColor g2d Color/white))
-			  (.fill g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
+			  ;(.setColor g2d Color/black)
+			  ;(.draw g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
+			  (let [bimg (loadImage "images/gogui-black-32x32.png")
+				wimg (loadImage "images/gogui-white-32x32.png")]
+			  (if (odd? (:id stone))
+			    (.drawImage g2d bimg (get-x stone u) (get-y stone u) u u this)
+			    (.drawImage g2d wimg (get-x stone u) (get-y stone u) u u this)))
+			  ;(.fill g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
 			  (when paint-id?
 			    (.setColor g2d Color/green)
 			    (.setFont g2d (Font. "Serif" Font/PLAIN 12))
