@@ -7,7 +7,7 @@
   (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas Dimension RenderingHints BorderLayout)
 	   (javax.swing.border BevelBorder)
 	   (javax.swing JFrame JPanel) (java.awt.event MouseAdapter MouseEvent)
-	   (java.awt.geom Line2D$Float Ellipse2D$Float ))
+	   (java.awt.geom Line2D$Float Ellipse2D$Float AffineTransform ))
   (:gen-class))
 
 (def *board-size* 19)

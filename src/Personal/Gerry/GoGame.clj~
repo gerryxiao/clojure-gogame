@@ -163,7 +163,7 @@
 (defn go [id x y]
   (play-one-stone id {:x x :y y}))
 
-(load "GoBoard1")
+(load "GoBoard2")
 
 (defn -main []
   (play-go))

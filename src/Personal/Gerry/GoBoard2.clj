@@ -1,4 +1,4 @@
-  (in-ns 'Personal.Gerry.GoGame)
+   (in-ns 'Personal.Gerry.GoGame)
  (import '(java.awt Container Image MediaTracker Toolkit)
 	'(java.net URL) '(javax.swing JMenuBar JMenu JMenuItem JCheckBoxMenuItem 
 				      JToolBar JToolBar$Separator JButton ImageIcon)
@@ -26,7 +26,12 @@
 				    (when (.equals (.getActionCommand e) "first")
 				      (get-snapshot 1)
 				      (compare-and-set! Id @Id 1)
-				      (.repaint this)))))
+				      (.repaint this))
+				    (when (.equals (.getActionCommand e) "pass")
+				      (def paint-id? (not paint-id?))
+				      (.repaint this)))
+		   (getPreferredSize []
+				     (Dimension. 700 780))))
 				      
 				      
 				      
@@ -91,15 +96,21 @@
 			(when (= (:liberty stone) nil)
 			  ;(.setColor g2d Color/black)
 			  ;(.draw g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
-			  (let [bimg (loadImage "images/gogui-black-32x32.png")
-				wimg (loadImage "images/gogui-white-32x32.png")]
-			  (if (odd? (:id stone))
-			    (.drawImage g2d bimg (get-x stone u) (get-y stone u) u u this)
-			    (.drawImage g2d wimg (get-x stone u) (get-y stone u) u u this)))
+			  (let [bimg (loadImage "images/blackstone.gif")
+				wimg (loadImage "images/whitestone.gif")]
+				;at (AffineTransform/getTranslateInstance (double (get-x stone u)) (double (get-y stone u)))]
+			    ;(.setTransform g2d at)
+			 
+			    (if (odd? (:id stone))
+			      ;(.drawImage g2d bimg at this)
+			      ;(.drawImage g2d wimg at this)))
+			     
+			      (.drawImage g2d bimg (get-x stone u) (get-y stone u) u u this)
+			      (.drawImage g2d wimg (get-x stone u) (get-y stone u) u u this)))
 			  ;(.fill g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
 			  (when paint-id?
-			    (.setColor g2d Color/green)
-			    (.setFont g2d (Font. "Serif" Font/PLAIN 12))
+			    (.setColor g2d Color/red)
+			    (.setFont g2d (Font. "Serif" Font/PLAIN 10))
 			    (.drawString g2d (.toString (:id stone)) (float (:x (get-stone-cord stone u)))
 					 (float (:y (get-stone-cord stone u)))))))
 			
@@ -158,11 +169,17 @@
   (let [button1 (navigate-button "previous" "previous" "previous step" "previous")
 	button2 (navigate-button "next" "next" "next step " "next")
 	button3 (navigate-button "first" "first" "go to first" "first")
-	button4 (navigate-button "last" "last" "go to last" "last")]
+	button4 (navigate-button "last" "last" "go to last" "last")
+	button5 (navigate-button "pass" "pass" "add id number" "pass")]
     (.add jt button1)
+    (.addSeparator jt)
     (.add jt button2)
+    (.addSeparator jt)
     (.add jt button3)
-    (.add jt button4)))
+    (.addSeparator jt)
+    (.add jt button4)
+    (.addSeparator jt)
+    (.add jt button5)))
  
 (def toolbar (JToolBar. "oops"))
 
@@ -171,14 +188,16 @@
   (.setBorder board (BevelBorder. BevelBorder/RAISED))
   (menu-init)
   (addButtons toolbar)
-  (doto main-window
+  (.setBorderPainted toolbar true)
+    (doto main-window
     (.setJMenuBar menu-bar)
+    
     (.add board BorderLayout/CENTER)
-    (.add toolbar BorderLayout/SOUTH)
+    (.add toolbar BorderLayout/NORTH)
     ;(.add menu-bar)
-    (.setSize 800 900)
-    ;(.pack) ;it seems swing component dont need pack
+    (.setSize 800 800)
+    (.pack) ;it seems swing component dont need pack
     (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
-    (.setIconImage (.createImage (Toolkit/getDefaultToolkit) "images/clojure"))
+    (.setIconImage (.createImage (Toolkit/getDefaultToolkit) "images/clojure-icon.gif"))
     (.setVisible true)))
 		      
