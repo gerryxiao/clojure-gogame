@@ -87,9 +87,14 @@
 		      (doseq [x extent]
 			(.draw g2d (new Line2D$Float u x (* 19 u) x))
 			(.draw g2d (new Line2D$Float x u x (* 19 u))))
-		      (when draw-coords? (doseq [x extent]			
-			(.drawString #^Graphics2D g2d (str (char (+ 96 (Math/round (/ x (float u)))))) (float (* 0.5 u))(float x))
-			(.drawString #^Graphics2D g2d (str (Math/round (/ x (float u)))) (float x)(float (* 0.5 u)))))
+		      ;(when draw-coords? (doseq [x extent]			
+		     ;	(.drawString #^Graphics2D g2d (str (char (+ 96 (Math/round (/ x (float u)))))) (float (* 0.5 u))(float x))
+		      ;	(.drawString #^Graphics2D g2d (str (Math/round (/ x (float u)))) (float x)(float (* 0.5 u)))))
+		      (when draw-coords? 
+			(doall
+			 (pmap #(.drawString g2d (str (char (+ 96 (Math/round (/ % (float u)))))) (float (* 0.5 u)) (float %)) extent))
+			(doall 
+			 (pmap #(.drawString #^Graphics2D g2d (str (Math/round (/ % (float u)))) (float %)(float (* 0.5 u))) extent)))
 		      (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 3.9) (* u 0.2) (* u 0.2)))
 		      (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 15.9) (* u 0.2) (* u 0.2)))
 		      (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 3.9) (* u 0.2) (* u 0.2)))   ;;draw 5 points:xing and tianyuan
@@ -206,7 +211,7 @@
 	     
 (mice-listen audio-menuitem (alter-var-root (var play-audio?) not) (.repaint board))
 (mice-listen undo-menuitem (alter-var-root (var undo?) not))
-(mice-listen coord-menuitem (alter-var-root (var draw-coords?) not))
+(mice-listen coord-menuitem (alter-var-root (var draw-coords?) not)(.repaint board))
 
 (comment   ;;begin comment
 (.addMouseListener new-menuitem (proxy [MouseAdapter] []
