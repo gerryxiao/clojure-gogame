@@ -167,15 +167,15 @@
 
 (defn get-snapshot [n]
   (let [snap (get @snapshots (dec n) )]
-    (compare-and-set! id @id  (:id snap)) ;;;problem???
-    (compare-and-set! black-id-groups @black-id-groups (:bgroups snap))
-    (compare-and-set! white-id-groups @white-id-groups (:wgroups snap))
-    (compare-and-set! b-captured-groups @b-captured-groups (:bdead-groups snap))
-    (compare-and-set! w-captured-groups @w-captured-groups (:wdead-groups snap))
+    (reset! id  (:id snap)) ;;;problem???
+    (reset! black-id-groups  (:bgroups snap))
+    (reset! white-id-groups  (:wgroups snap))
+    (reset! b-captured-groups (:bdead-groups snap))
+    (reset! w-captured-groups (:wdead-groups snap))
     (dosync 
      (ref-set whole-lists (:lists snap)))))
 (declare play-sound)		      
-
+(declare dead-point?)
 (defn play-one-stone [number loc]
   (let [s (struct stone number loc)
 	groups (if (odd? number) black-id-groups white-id-groups)]
@@ -193,6 +193,24 @@
       (save-snapshot number @whole-lists @black-id-groups @white-id-groups @b-captured-groups @w-captured-groups)
       (test-content "after remove!" ))))
 
+(defn dead-point? [stone]
+    (let [neis (get-neighbors-id stone)
+	  no-of-neis (count neis)
+	  groups (if (odd? (:id stone)) @white-id-groups @black-id-groups)
+	  oneqi-group (filter #(= 1 (liberty-of-group %)) groups)
+	  dneis (flatten (for [n neis] (filter #(includes? % n) oneqi-group)))
+	  ]
+      (println "oneqi-group " oneqi-group)
+      (println "dneis " dneis)
+      
+      (and (= no-of-neis 4)  (empty? dneis))))
+					   
+						  
+	    
+	    
+	    
+	    
+	
 
 (defn go [n x y]
   (play-one-stone n {:x x :y y}))

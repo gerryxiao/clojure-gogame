@@ -7,7 +7,7 @@
   (:require [clojure.zip :as zip])
   (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas Dimension RenderingHints BorderLayout)
 	   (javax.swing.border BevelBorder)
-	   (javax.swing JFrame JPanel) (java.awt.event MouseAdapter MouseEvent ActionEvent)
+	   (javax.swing JFrame JPanel BorderFactory) (java.awt.event MouseAdapter MouseEvent ActionEvent)
 	   (java.awt.geom Line2D$Float Ellipse2D$Float AffineTransform )
 	   (java.util Properties)(java.io File)
 	   (javax.sound.sampled AudioFormat AudioInputStream SourceDataLine DataLine$Info AudioSystem))
@@ -17,6 +17,8 @@
 (def *debug* true)
 (def id (atom 0)) ; stone id number
 (def paint-id? false)
+(def play-audio? false)
+(def undo? false)
 (def modes ["play" "view" "review" "game-over"])
 
 (def whole-lists (ref [])) ; use as saving all played stones stones ,includes captured stones 按序储存所有已下棋子包括死子
@@ -165,15 +167,15 @@
 
 (defn get-snapshot [n]
   (let [snap (get @snapshots (dec n) )]
-    (compare-and-set! id @id  (:id snap)) ;;;problem???
-    (compare-and-set! black-id-groups @black-id-groups (:bgroups snap))
-    (compare-and-set! white-id-groups @white-id-groups (:wgroups snap))
-    (compare-and-set! b-captured-groups @b-captured-groups (:bdead-groups snap))
-    (compare-and-set! w-captured-groups @w-captured-groups (:wdead-groups snap))
+    (reset! id  (:id snap)) ;;;problem???
+    (reset! black-id-groups  (:bgroups snap))
+    (reset! white-id-groups  (:wgroups snap))
+    (reset! b-captured-groups (:bdead-groups snap))
+    (reset! w-captured-groups (:wdead-groups snap))
     (dosync 
      (ref-set whole-lists (:lists snap)))))
 (declare play-sound)		      
-
+(declare dead-point?)
 (defn play-one-stone [number loc]
   (let [s (struct stone number loc)
 	groups (if (odd? number) black-id-groups white-id-groups)]
@@ -191,6 +193,24 @@
       (save-snapshot number @whole-lists @black-id-groups @white-id-groups @b-captured-groups @w-captured-groups)
       (test-content "after remove!" ))))
 
+(defn dead-point? [stone]
+    (let [neis (get-neighbors-id stone)
+	stones (count neis)]
+	
+    (if (= 4 stones)
+      (let [groups (if (odd? (:id stone)) @white-id-groups @black-id-groups)
+	    oneqi-group (filter #(= 1 (liberty-of-group %)) groups)]
+	    
+	(when-not (empty? oneqi-group)
+	  (flatten (for [stone neis ]
+	    (let [neibours (get-neighbors-id stone)]
+	      (for [one neibours]
+		(filter #(includes? % one) oneqi-group))))))) nil)))
+	    
+	    
+	    
+	    
+	
 
 (defn go [n x y]
   (play-one-stone n {:x x :y y}))

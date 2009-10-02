@@ -1,5 +1,6 @@
  ;;go game gui file
 (in-ns 'Personal.Gerry.GoGame)
+(use 'clojure.parallel)
 (import '(java.awt Container Image MediaTracker Toolkit)
 	 '(java.net URL) '(javax.swing JMenuBar JMenu JMenuItem JCheckBoxMenuItem 
 				       JToolBar JToolBar$Separator JButton ImageIcon JFileChooser)
@@ -11,7 +12,7 @@
 				    (when (and (not (empty? @whole-lists)) (.equals (.getActionCommand e) "previous"))
 				      (condp = @id
 					1 (do (reset-envs)
-					      (.repaint this))
+					      (.repaint #^JFrame this))
 				        (do (get-snapshot (dec @id)) ;;error
 						     (println "id is " @id)
 						     (println "count is" (count @snapshots))
@@ -64,7 +65,7 @@
     (.waitForID mediaTracker 0)
      image))
 
-(def draw-coords? false)
+(def draw-coords? true)
 
 (def board (proxy [JPanel] []
 	     (paintComponent  [g]
@@ -73,6 +74,7 @@
 			  w (.getWidth #^JPanel this)
 			  u (/ w 20.0)
 			  extent (range u (* u 20) u)
+			  pextent (par (vec extent))
 			  coords (for [x extent y extent] {:x x :y y})
 			  last-stone (last @whole-lists)]
 		      ;(println "u is" u)  ;debug
@@ -84,17 +86,18 @@
 		      (.setColor g2d Color/BLACK)
 		      (.setStroke g2d (BasicStroke. (float 1)))
 		      (.setFont g2d (Font. "Times" Font/PLAIN 8))
-		      (doseq [x extent]
-			(.draw g2d (new Line2D$Float u x (* 19 u) x))
-			(.draw g2d (new Line2D$Float x u x (* 19 u))))
+		      (doall
+			(map #(.draw g2d (new Line2D$Float u % (* 19 u) %)) pextent))
+		      (doall
+			(map #(.draw g2d (new Line2D$Float % u % (* 19 u))) pextent))
 		      ;(when draw-coords? (doseq [x extent]			
 		     ;	(.drawString #^Graphics2D g2d (str (char (+ 96 (Math/round (/ x (float u)))))) (float (* 0.5 u))(float x))
 		      ;	(.drawString #^Graphics2D g2d (str (Math/round (/ x (float u)))) (float x)(float (* 0.5 u)))))
-		      (when draw-coords? 
+		  (time    (when draw-coords? 
 			(doall
-			 (pmap #(.drawString g2d (str (char (+ 96 (Math/round (/ % (float u)))))) (float (* 0.5 u)) (float %)) extent))
+			 (map #(.drawString g2d (str (char (+ 96 (Math/round (float (/ % u)))))) (float (* 0.5 u)) (float %)) pextent))
 			(doall 
-			 (pmap #(.drawString #^Graphics2D g2d (str (Math/round (/ % (float u)))) (float %)(float (* 0.5 u))) extent)))
+			 (map #(.drawString #^Graphics2D g2d (str (Math/round (float (/ %  u)))) (float %)(float (* 0.5 u))) pextent))))
 		      (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 3.9) (* u 0.2) (* u 0.2)))
 		      (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 15.9) (* u 0.2) (* u 0.2)))
 		      (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 3.9) (* u 0.2) (* u 0.2)))   ;;draw 5 points:xing and tianyuan
@@ -149,18 +152,21 @@
 					    XY (if (empty? xy) nil (trans-coord (:x (first xy)) (:y (first xy)) u))]
 					    
 					(when (not (nil? XY))
-					  (let [x (Math/round (float (:x XY))) y (Math/round (float (:y XY)))]
-					    (if (stone-in-lists? {:x x :y y}) (println "sorry you canot play there")
-						(do 
-						  (swap! id inc)
-						  (when play-audio? (.start (Thread. #(play-sound "babycry.wav"))))
+					  (let [x (Math/round (float (:x XY))) y (Math/round (float (:y XY)))
+						st (struct stone (inc @id) {:x x :y y} )]
+					    					    
+					      (if (stone-in-lists? {:x x :y y}) (println "sorry you canot play there")
+						  (when-not (dead-point? st)
+						  (do 
+						    (swap! id inc)
+						    (when play-audio? (.start (Thread. #(play-sound "babycry.wav"))))
 					  
-						  (go @id x y)
-						  (if (even? @id)
-						    (.setIcon w-b-button (ImageIcon. "images/gogui-black-24x24.png"))
-						    (.setIcon w-b-button (ImageIcon. "images/gogui-white-24x24.png")))
+						    (go @id x y)
+						    (if (even? @id)
+						      (.setIcon w-b-button (ImageIcon. "images/gogui-black-24x24.png"))
+						      (.setIcon w-b-button (ImageIcon. "images/gogui-white-24x24.png")))))))))))))
 						  ;(.repaint #^JPanel board)
-						  )))))))))
+						  
 
 (def lists-watcher (agent 0))
 (defn lists-watcher-action [v r]  ;; v is the state of agent,and r is the ref 

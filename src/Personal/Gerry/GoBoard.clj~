@@ -1,5 +1,6 @@
  ;;go game gui file
 (in-ns 'Personal.Gerry.GoGame)
+(use 'clojure.parallel)
 (import '(java.awt Container Image MediaTracker Toolkit)
 	 '(java.net URL) '(javax.swing JMenuBar JMenu JMenuItem JCheckBoxMenuItem 
 				       JToolBar JToolBar$Separator JButton ImageIcon JFileChooser)
@@ -11,7 +12,7 @@
 				    (when (and (not (empty? @whole-lists)) (.equals (.getActionCommand e) "previous"))
 				      (condp = @id
 					1 (do (reset-envs)
-					      (.repaint this))
+					      (.repaint #^JFrame this))
 				        (do (get-snapshot (dec @id)) ;;error
 						     (println "id is " @id)
 						     (println "count is" (count @snapshots))
@@ -64,7 +65,7 @@
     (.waitForID mediaTracker 0)
      image))
 
-(def draw-coords? false)
+(def draw-coords? true)
 
 (def board (proxy [JPanel] []
 	     (paintComponent  [g]
@@ -73,10 +74,11 @@
 			  w (.getWidth #^JPanel this)
 			  u (/ w 20.0)
 			  extent (range u (* u 20) u)
+			  pextent (par (vec extent))
 			  coords (for [x extent y extent] {:x x :y y})
 			  last-stone (last @whole-lists)]
-		      (println "u is" u)  ;debug
-		      (println "coords is " coords) ;debug
+		      ;(println "u is" u)  ;debug
+		      ;(println "coords is " coords) ;debug
 		      (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
 		      (.draw3DRect g2d 0 0 w w true)
 		      (.setColor g2d (Color. 212 167 102))
@@ -84,12 +86,18 @@
 		      (.setColor g2d Color/BLACK)
 		      (.setStroke g2d (BasicStroke. (float 1)))
 		      (.setFont g2d (Font. "Times" Font/PLAIN 8))
-		      (doseq [x extent]
-			(.draw g2d (new Line2D$Float u x (* 19 u) x))
-			(.draw g2d (new Line2D$Float x u x (* 19 u))))
-		      (when draw-coords? (doseq [x extent]			
-			(.drawString #^Graphics2D g2d (str (char (+ 96 (Math/round (/ x (float u)))))) (float (* 0.5 u))(float x))
-			(.drawString #^Graphics2D g2d (str (Math/round (/ x (float u)))) (float x)(float (* 0.5 u)))))
+		      (doall
+			(map #(.draw g2d (new Line2D$Float u % (* 19 u) %)) pextent))
+		      (doall
+			(map #(.draw g2d (new Line2D$Float % u % (* 19 u))) pextent))
+		      ;(when draw-coords? (doseq [x extent]			
+		     ;	(.drawString #^Graphics2D g2d (str (char (+ 96 (Math/round (/ x (float u)))))) (float (* 0.5 u))(float x))
+		      ;	(.drawString #^Graphics2D g2d (str (Math/round (/ x (float u)))) (float x)(float (* 0.5 u)))))
+		  (time    (when draw-coords? 
+			(doall
+			 (map #(.drawString g2d (str (char (+ 96 (Math/round (float (/ % u)))))) (float (* 0.5 u)) (float %)) pextent))
+			(doall 
+			 (map #(.drawString #^Graphics2D g2d (str (Math/round (float (/ %  u)))) (float %)(float (* 0.5 u))) pextent))))
 		      (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 3.9) (* u 0.2) (* u 0.2)))
 		      (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 15.9) (* u 0.2) (* u 0.2)))
 		      (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 3.9) (* u 0.2) (* u 0.2)))   ;;draw 5 points:xing and tianyuan
@@ -144,18 +152,22 @@
 					    XY (if (empty? xy) nil (trans-coord (:x (first xy)) (:y (first xy)) u))]
 					    
 					(when (not (nil? XY))
-					  (let [x (Math/round (float (:x XY))) y (Math/round (float (:y XY)))]
-					    (if (stone-in-lists? {:x x :y y}) (println "sorry you canot play there")
-						(do 
-						  (swap! id inc)
-						  (.start (Thread. #(play-sound "babycry.wav")))
+					  (let [x (Math/round (float (:x XY))) y (Math/round (float (:y XY)))
+						stone (struct stone (inc @id) {:x x :y y} )]
+					    (when (or (nil? (dead-point? stone)) (not-empty (dead-point? stone))) ;; problem here???
+					      (println "dead points? " (dead-point? stone))
+					    
+					      (if (stone-in-lists? {:x x :y y}) (println "sorry you canot play there")
+						  (do 
+						    (swap! id inc)
+						    (when play-audio? (.start (Thread. #(play-sound "babycry.wav"))))
 					  
-						  (go @id x y)
-						  (if (even? @id)
-						    (.setIcon w-b-button (ImageIcon. "images/gogui-black-24x24.png"))
-						    (.setIcon w-b-button (ImageIcon. "images/gogui-white-24x24.png")))
+						    (go @id x y)
+						    (if (even? @id)
+						      (.setIcon w-b-button (ImageIcon. "images/gogui-black-24x24.png"))
+						      (.setIcon w-b-button (ImageIcon. "images/gogui-white-24x24.png")))))))))))))
 						  ;(.repaint #^JPanel board)
-						  )))))))))
+						  
 
 (def lists-watcher (agent 0))
 (defn lists-watcher-action [v r]  ;; v is the state of agent,and r is the ref 
@@ -168,13 +180,18 @@
 (def menu-bar (JMenuBar.))
 (def file-menu (JMenu. "File"))
 (def option-menu (JMenu. "Option"))
+(def help-menu (JMenu. "Help"))
 (def new-menuitem (JMenuItem. "New" KeyEvent/VK_N))
 (def open-menuitem (JMenuItem. "Open" KeyEvent/VK_O))
 (def save-menuitem (JMenuItem. "Save" KeyEvent/VK_S))
 (def exit-menuitem (JMenuItem. "Exit" KeyEvent/VK_Q))
+(def about-menuitem (JMenuItem. "About"))
+(def manual-menuitem (JMenuItem. "Manual"))
 
 (def paint-menuitem (JCheckBoxMenuItem. "Enable Id" false))
-(def audio-menuitem (JCheckBoxMenuItem. "Enable Audio" true))
+(def audio-menuitem (JCheckBoxMenuItem. "Enable Audio" false))
+(def undo-menuitem (JCheckBoxMenuItem. "Enable undo" false))
+(def coord-menuitem (JCheckBoxMenuItem. "Enable coords" false))
 
 (defmacro mice-listen [target & action]
   `(. ~target addMouseListener (proxy [MouseAdapter] []
@@ -197,6 +214,11 @@
 						       (get-snapshot (count data))
 						       (.repaint #^JFrame main-window)))))
 (mice-listen exit-menuitem (System/exit 0))
+(mice-listen paint-menuitem (alter-var-root (var paint-id?) not) (.repaint board))
+	     
+(mice-listen audio-menuitem (alter-var-root (var play-audio?) not) (.repaint board))
+(mice-listen undo-menuitem (alter-var-root (var undo?) not))
+(mice-listen coord-menuitem (alter-var-root (var draw-coords?) not)(.repaint board))
 
 (comment   ;;begin comment
 (.addMouseListener new-menuitem (proxy [MouseAdapter] []
@@ -242,9 +264,16 @@
   (.add option-menu paint-menuitem)
   (.addSeparator option-menu)
   (.add option-menu audio-menuitem)
+  (.addSeparator option-menu)
+  (.add option-menu undo-menuitem)
+  (.add option-menu coord-menuitem)
+  (.add help-menu about-menuitem)
+  (.addSeparator help-menu)
+  (.add help-menu manual-menuitem)
   (.add #^JMenuBar menu-bar #^JMenu file-menu)
-  (.add #^JMenuBar menu-bar #^JMenu option-menu))
-
+  (.add #^JMenuBar menu-bar #^JMenu option-menu)
+  (.add menu-bar help-menu)
+  (.setBorder menu-bar (BorderFactory/createBevelBorder BevelBorder/LOWERED)))
 
 
 (defn navigate-button [imagename actioncommand tooltiptext alttext]
