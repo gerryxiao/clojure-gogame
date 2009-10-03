@@ -153,11 +153,10 @@
 					    
 					(when (not (nil? XY))
 					  (let [x (Math/round (float (:x XY))) y (Math/round (float (:y XY)))
-						stone (struct stone (inc @id) {:x x :y y} )]
-					    (when (or (nil? (dead-point? stone)) (not-empty (dead-point? stone))) ;; problem here???
-					      (println "dead points? " (dead-point? stone))
-					    
+						st (struct stone (inc @id) {:x x :y y} )]
+					    					    
 					      (if (stone-in-lists? {:x x :y y}) (println "sorry you canot play there")
+						  (when-not (dead-point? st)
 						  (do 
 						    (swap! id inc)
 						    (when play-audio? (.start (Thread. #(play-sound "babycry.wav"))))

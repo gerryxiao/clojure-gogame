@@ -79,6 +79,18 @@
 (defn liberty-of-group [group]                    ;;only dead group call it,result is 0
   (let [liberty-list (map liberty-of-stone group)]
     (reduce + liberty-list)))
+
+(defn liberty-of-group-real [group]
+  (let [grp (for [id group] (nth @whole-lists (dec id)))  ;;how to cal qi??
+	ns (for [s grp] (filter (complement nil?)(vals (get-neighbors s))))
+	part1 (filter stone-in-lists? (flatten ns))
+	part2 (filter (complement stone-in-lists?) (flatten ns))]
+    (println "grp" grp)
+    (println "part1 " part1)
+    (println "ns " (flatten ns))
+    (- (liberty-of-group group) (- (count part2) (count (set part2))))))
+	
+       
 	 
 
 (defn stone-to-idgroup [groups id-of-neighbors id]  ;put playing stone to groups
@@ -195,17 +207,25 @@
 
 (defn dead-point? [stone]
     (let [neis (get-neighbors-id stone)
-	stones (count neis)]
-	
-    (if (= 4 stones)
-      (let [groups (if (odd? (:id stone)) @white-id-groups @black-id-groups)
-	    oneqi-group (filter #(= 1 (liberty-of-group %)) groups)]
-	    
-	(when-not (empty? oneqi-group)
-	  (flatten (for [stone neis ]
-	    (let [neibours (get-neighbors-id stone)]
-	      (for [one neibours]
-		(filter #(includes? % one) oneqi-group))))))) nil)))
+	  no-of-neis (count neis)
+	  groups (if (odd? (:id stone)) @white-id-groups @black-id-groups)
+	  groups1 (if (odd? (:id stone)) (stone-to-idgroup  @black-id-groups neis (:id stone)) (stone-to-idgroup  @white-id-groups neis (:id stone)))
+	  groups2 (merge-inner-idgroups groups1 (:id stone))
+	  oneqi-group (filter #(= 1 (liberty-of-group-real %)) groups)
+	  oneqi-group1 (filter #(= 0 (liberty-of-group-real %)) groups2)
+	  sneis (flatten (for [n neis] (filter #(includes? % n) oneqi-group1)))
+	  dneis (flatten (for [n neis] (filter #(includes? % n) oneqi-group)))
+	  same-color? (every? (if (odd? (:id stone)) odd? even?) neis)
+	  ]
+      (println "oneqi-group " oneqi-group)
+      (println "neis " neis)
+      (println "groups " groups)
+      (println "dneis " dneis)
+      (println "color? " same-color?)
+      
+      (and (= no-of-neis 4)   (empty? dneis)  (not (empty? sneis)))))
+					   
+						  
 	    
 	    
 	    

@@ -152,11 +152,10 @@
 					    XY (if (empty? xy) nil (trans-coord (:x (first xy)) (:y (first xy)) u))]
 					    
 					(when (not (nil? XY))
-					  (let [x (Math/round (float (:x XY))) y (Math/round (float (:y XY)))
-						st (struct stone (inc @id) {:x x :y y} )]
-					    					    
+					  (let [x (Math/round (float (:x XY))) y (Math/round (float (:y XY)))]
+											    					    
 					      (if (stone-in-lists? {:x x :y y}) (println "sorry you canot play there")
-						  (when-not (dead-point? st)
+						  (when-not (dead-point? (inc @id) {:x x :y y})
 						  (do 
 						    (swap! id inc)
 						    (when play-audio? (.start (Thread. #(play-sound "babycry.wav"))))

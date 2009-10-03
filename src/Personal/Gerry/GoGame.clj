@@ -79,6 +79,18 @@
 (defn liberty-of-group [group]                    ;;only dead group call it,result is 0
   (let [liberty-list (map liberty-of-stone group)]
     (reduce + liberty-list)))
+
+(defn liberty-of-group-real [group]
+  (let [grp (for [id group] (nth @whole-lists (dec id)))  ;;how to cal qi??
+	ns (for [s grp] (filter (complement nil?)(vals (get-neighbors s))))
+	part1 (filter stone-in-lists? (flatten ns))
+	part2 (filter (complement stone-in-lists?) (flatten ns))]
+    (println "grp" grp)
+    (println "part1 " part1)
+    (println "ns " (flatten ns))
+    (- (liberty-of-group group) (- (count part2) (count (set part2))))))
+	
+       
 	 
 
 (defn stone-to-idgroup [groups id-of-neighbors id]  ;put playing stone to groups
@@ -193,17 +205,16 @@
       (save-snapshot number @whole-lists @black-id-groups @white-id-groups @b-captured-groups @w-captured-groups)
       (test-content "after remove!" ))))
 
-(defn dead-point? [stone]
-    (let [neis (get-neighbors-id stone)
-	  no-of-neis (count neis)
-	  groups (if (odd? (:id stone)) @white-id-groups @black-id-groups)
-	  oneqi-group (filter #(= 1 (liberty-of-group %)) groups)
-	  dneis (flatten (for [n neis] (filter #(includes? % n) oneqi-group)))
-	  ]
-      (println "oneqi-group " oneqi-group)
-      (println "dneis " dneis)
-      
-      (and (= no-of-neis 4)  (empty? dneis))))
+(defn dead-point? [aid loc]
+    (binding [whole-lists (ref @whole-lists)
+	      black-id-groups (atom @black-id-groups)
+	      white-id-groups (atom @white-id-groups)
+	      b-captured-groups (atom @b-captured-groups)
+	      w-captured-groups (atom @w-captured-groups)
+	      snapshots (atom @snapshots)]
+      (play-one-stone aid loc)
+      (let [grp (if (odd? aid) @black-id-groups @white-id-groups) ]
+	(if (includes? (map liberty-of-group-real grp) 0) true false))))
 					   
 						  
 	    
