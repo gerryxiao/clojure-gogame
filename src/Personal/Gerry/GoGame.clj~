@@ -205,25 +205,16 @@
       (save-snapshot number @whole-lists @black-id-groups @white-id-groups @b-captured-groups @w-captured-groups)
       (test-content "after remove!" ))))
 
-(defn dead-point? [stone]
-    (let [neis (get-neighbors-id stone)
-	  no-of-neis (count neis)
-	  groups (if (odd? (:id stone)) @white-id-groups @black-id-groups)
-	  groups1 (if (odd? (:id stone)) (stone-to-idgroup  @black-id-groups neis (:id stone)) (stone-to-idgroup  @white-id-groups neis (:id stone)))
-	  groups2 (merge-inner-idgroups groups1 (:id stone))
-	  oneqi-group (filter #(= 1 (liberty-of-group-real %)) groups)
-	  oneqi-group1 (filter #(= 0 (liberty-of-group-real %)) groups2)
-	  sneis (flatten (for [n neis] (filter #(includes? % n) oneqi-group1)))
-	  dneis (flatten (for [n neis] (filter #(includes? % n) oneqi-group)))
-	  same-color? (every? (if (odd? (:id stone)) odd? even?) neis)
-	  ]
-      (println "oneqi-group " oneqi-group)
-      (println "neis " neis)
-      (println "groups " groups)
-      (println "dneis " dneis)
-      (println "color? " same-color?)
-      
-      (and (= no-of-neis 4)   (empty? dneis)  (not (empty? sneis)))))
+(defn forbidden-point? [aid loc]  ;;check forbidden point which can't be played
+    (binding [whole-lists (ref @whole-lists)
+	      black-id-groups (atom @black-id-groups)
+	      white-id-groups (atom @white-id-groups)
+	      b-captured-groups (atom @b-captured-groups)
+	      w-captured-groups (atom @w-captured-groups)
+	      snapshots (atom @snapshots)]
+      (play-one-stone aid loc)
+      (let [grp (if (odd? aid) @black-id-groups @white-id-groups) ]
+	(if (includes? (map liberty-of-group-real grp) 0) true false))))
 					   
 						  
 	    

@@ -155,7 +155,7 @@
 					  (let [x (Math/round (float (:x XY))) y (Math/round (float (:y XY)))]
 											    					    
 					      (if (stone-in-lists? {:x x :y y}) (println "sorry you canot play there")
-						  (when-not (dead-point? (inc @id) {:x x :y y})
+						  (when-not (forbidden-point? (inc @id) {:x x :y y}) ;; check probidden point
 						  (do 
 						    (swap! id inc)
 						    (when play-audio? (.start (Thread. #(play-sound "babycry.wav"))))

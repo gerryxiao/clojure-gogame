@@ -205,7 +205,7 @@
       (save-snapshot number @whole-lists @black-id-groups @white-id-groups @b-captured-groups @w-captured-groups)
       (test-content "after remove!" ))))
 
-(defn dead-point? [aid loc]
+(defn forbidden-point? [aid loc]  ;;check forbidden point which can't be played
     (binding [whole-lists (ref @whole-lists)
 	      black-id-groups (atom @black-id-groups)
 	      white-id-groups (atom @white-id-groups)
@@ -251,4 +251,4 @@
 
 
 	 
-	    
+(load "aux-board")	    
