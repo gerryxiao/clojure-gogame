@@ -2,6 +2,7 @@
 (import '(javax.swing JLabel JTextField  JTextArea JList JScrollPane ListSelectionModel))
 (import '(java.util Vector))
 (import '(java.awt GridLayout))
+(import '(javax.swing.border TitledBorder))
 
 
 (def aux-board (JPanel.))
@@ -11,11 +12,13 @@
 
 (def white-player(JLabel. "name1" (ImageIcon. "pic1") JLabel/RIGHT))
 (def black-player (JLabel. "name2" (ImageIcon. "pic2") JLabel/RIGHT))
-(def vs-player (JLabel. "VS"))
+(def vs-player (JLabel. "VS" JLabel/CENTER))
+
+(.setHorizontalTextPosition vs-player JLabel/CENTER)
 
 (def dialog-field  (JTextField."Hello World" 12))
 
-(def msg-area  (JTextArea. "this is a msg area"))
+(def msg-area  (JTextArea. "this is a msg area" 5 20))
 
 (def lists-data (Vector.))
 (doto lists-data
@@ -29,6 +32,7 @@
 
 (doto lists
   (.setVisibleRowCount 7)
+  (.setBorder (TitledBorder. "viewers"))
   (.setSelectionMode ListSelectionModel/SINGLE_INTERVAL_SELECTION))
   ;(.setLayoutOrientation JList/HORIZONTAL_WRAP))
 
@@ -36,6 +40,7 @@
 ;;(.setPreferredSize jsp-for-lists (Dimension. 80 60))
 
 (doto aux-board2
+  (.setBorder (TitledBorder. "players"))
   (.setLayout (GridLayout. 1 3))
   (.add white-player )
   (.add vs-player)
@@ -53,7 +58,7 @@
 
 (doto aux-board3
   (.setLayout (BorderLayout.))
-  (.add msg-area BorderLayout/CENTER)
+  (.add (new JScrollPane msg-area) BorderLayout/CENTER)
   (.add dialog-field BorderLayout/SOUTH))
 
 (doto aux-board
@@ -68,6 +73,6 @@
   (let [jf (JFrame.)]
     (doto jf
       (.add aux-board BorderLayout/CENTER)
-      (.setSize 200 800)
+      ;(.setSize 200 800)
       (.pack)
       (.setVisible true))))
