@@ -10,8 +10,8 @@
 (def aux-board2 (JPanel.))
 (def aux-board3 (JPanel.))
 
-(def white-player(JLabel. "name1" (ImageIcon. "pic1") JLabel/RIGHT))
-(def black-player (JLabel. "name2" (ImageIcon. "pic2") JLabel/RIGHT))
+(def white-player(JLabel. "name1" (ImageIcon. "01.gif") JLabel/RIGHT))
+(def black-player (JLabel. "name2" (ImageIcon. "14.gif") JLabel/RIGHT))
 (def vs-player (JLabel. "<=>" JLabel/CENTER))
 
 (.setHorizontalTextPosition vs-player JLabel/CENTER)
@@ -66,6 +66,7 @@
   (.setLayout (BorderLayout. 1 1))
   (.add aux-board1 BorderLayout/NORTH)
   (.add aux-board3 BorderLayout/CENTER))
+  ;(.setPreferredSize (Dimension. 200 750))
   ;(.pack)
   ;(.setSize 200 800)
   ;(.setVisible true))
@@ -74,6 +75,6 @@
   (let [jf (JFrame.)]
     (doto jf
       (.add aux-board BorderLayout/CENTER)
-      (.setPreferredSize (Dimension. 200 800))
+      (.setPreferredSize (Dimension. 300 800))
       (.pack)
       (.setVisible true))))
