@@ -2,7 +2,7 @@
 (import '(javax.swing JLabel JTextField  JTextArea JList JScrollPane ListSelectionModel))
 (import '(java.util Vector))
 (import '(java.awt GridLayout))
-(import '(javax.swing.border TitledBorder EtchedBorder))
+(import '(javax.swing.border TitledBorder EtchedBorder LineBorder))
 
 
 (def aux-board (JPanel.))
@@ -10,9 +10,11 @@
 (def aux-board2 (JPanel.))
 (def aux-board3 (JPanel.))
 
-(def white-player(JLabel. "name1" (ImageIcon. "01.gif") JLabel/RIGHT))
-(def black-player (JLabel. "name2" (ImageIcon. "14.gif") JLabel/RIGHT))
+(def white-player(JLabel. "gerry" (ImageIcon. "white-small.png") JLabel/CENTER))
+(def black-player (JLabel. "rose" (ImageIcon. "black-small.png") JLabel/CENTER))
 (def vs-player (JLabel. "<=>" JLabel/CENTER))
+(.setBorder white-player (BorderFactory/createLineBorder Color/lightGray 2))
+(.setBorder black-player (BorderFactory/createLineBorder Color/black 2))
 
 (.setHorizontalTextPosition vs-player JLabel/CENTER)
 
@@ -32,18 +34,15 @@
 
 (doto lists
   (.setVisibleRowCount 7)
-  (.setBorder (TitledBorder. "viewers"))
+  (.setBorder (TitledBorder. "Spectators"))
   (.setSelectionMode ListSelectionModel/SINGLE_INTERVAL_SELECTION))
   ;(.setLayoutOrientation JList/HORIZONTAL_WRAP))
 
-(def jsp-for-lists (JScrollPane. lists))
-;;(.setPreferredSize jsp-for-lists (Dimension. 80 60))
-
 (doto aux-board2
-  (.setBorder (TitledBorder. "players"))
-  (.setLayout (GridLayout. 1 3))
+  (.setBorder (TitledBorder. "Match"))
+  (.setLayout (GridLayout. 1 2 ))
   (.add white-player )
-  (.add vs-player)
+  ;(.add vs-player)
   (.add black-player))
 
 (doto aux-board1
@@ -53,7 +52,7 @@
 
 (doto msg-area
   (.setWrapStyleWord  true)
-  (.setBorder (TitledBorder. (EtchedBorder.) "message board"))
+  (.setBorder (TitledBorder. (BorderFactory/createLoweredBevelBorder) "message board"))
   (.setEditable false)
   (.setFont (Font. "Times-Roman" Font/PLAIN 12)))
 
@@ -66,7 +65,7 @@
   (.setLayout (BorderLayout. 1 1))
   (.add aux-board1 BorderLayout/NORTH)
   (.add aux-board3 BorderLayout/CENTER))
-  ;(.setPreferredSize (Dimension. 200 750))
+  ;(.setPreferredSize (Dimension. 200 800))
   ;(.pack)
   ;(.setSize 200 800)
   ;(.setVisible true))
@@ -75,6 +74,6 @@
   (let [jf (JFrame.)]
     (doto jf
       (.add aux-board BorderLayout/CENTER)
-      (.setPreferredSize (Dimension. 300 800))
+      (.setPreferredSize (Dimension. 200 (* 0.75 (:h screen-size))))
       (.pack)
       (.setVisible true))))

@@ -6,6 +6,14 @@
 				       JToolBar JToolBar$Separator JButton ImageIcon JFileChooser)
 	 '(java.awt.event KeyEvent ActionListener)
 	 '(javax.swing JCheckBoxMenuItem))
+(def screen-size 
+     {:w (.. Toolkit getDefaultToolkit getScreenSize getWidth) :h (.. Toolkit getDefaultToolkit getScreenSize getHeight)})
+(def pframe-size (Dimension. (* 1.15 (* 0.8 (:h screen-size))) (* 0.8 (:h screen-size))))
+(def mframe-size (Dimension. (* 1.15 (* 1.0 (:h screen-size))) (* 1.0 (:h screen-size))))
+(def pboard-size (Dimension. (* 0.75 (:h screen-size)) (* 0.75 (:h screen-size))))
+(def mboard-size (Dimension. (* 0.9 (:h screen-size)) (* 0.9 (:h screen-size))))
+(def paux-size (Dimension. (* 0.2 (:h screen-size)) (.getHeight pboard-size)))
+(def maux-size (Dimension. (* 0.2 (:h screen-size)) (.getHeight mboard-size)))
 	 
 (def main-window (proxy [JFrame ActionListener] [ "Clojure 围棋游戏 作者：gerryxiao@gmail.com"]
 		   (actionPerformed [#^ActionEvent e]
@@ -33,7 +41,9 @@
 				      (def paint-id? (not paint-id?))
 				      (.repaint #^JFrame this)))
 		   (getPreferredSize []
-				     (Dimension. 950 900))
+				     pframe-size)
+		   (getMaximumSize   []
+				     mframe-size)
 		   ))
 				      
 				      
@@ -86,7 +96,7 @@
 		      (.fill3DRect g2d 0 0 w w true)
 		      (.setColor g2d Color/BLACK)
 		      (.setStroke g2d (BasicStroke. (float 1)))
-		      (.setFont g2d (Font. "Times" Font/PLAIN 8))
+		      (.setFont g2d (Font. "Times" Font/BOLD 8))
 		      (doall
 			(map #(.draw g2d (new Line2D$Float u % (* 19 u) %)) pextent))
 		      (doall
@@ -135,7 +145,9 @@
 			(.draw g2d (Ellipse2D$Float. (+ (get-x last-stone  u)(/ u 4.0))
 						     (+ (get-y last-stone  u)(/ u 4.0)) (/ u 2.0) (/ u 2.0))))))
 	     (getPreferredSize []
-			      (Dimension. 800 800))))
+			      pboard-size)
+	     (getMaximumSize  []
+			      mboard-size)))
 
 		       
 (declare w-b-button setup-mode)		      
@@ -319,9 +331,9 @@
   (addButtons toolbar)
   (setup-mode "review")
   (.setBorderPainted #^JToolBar toolbar true)
-  (.setPreferredSize aux-board (Dimension. 200 800))
-  (.setPreferredSize board (Dimension. 800 800))
-  (.setPreferredSize toolbar (Dimension. 600 50))
+  (.setPreferredSize aux-board paux-size)
+  ;(.setPreferredSize board (Dimension. 800 800))
+  ;(.setPreferredSize toolbar (Dimension. 600 50))
   (doto #^JFrame main-window
 	  (.setJMenuBar menu-bar)
     
@@ -329,7 +341,7 @@
 	  (.add #^JToolBar toolbar BorderLayout/NORTH)
 	  (.add aux-board BorderLayout/EAST)
     ;(.add menu-bar)
-	  (.setPreferredSize (Dimension. 800 800))
+	  ;(.setPreferredSize (Dimension. 800 800))
 	  (.pack) 
 	  (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
 	  (.setIconImage (.createImage (Toolkit/getDefaultToolkit) "images/clojure-icon.gif"))

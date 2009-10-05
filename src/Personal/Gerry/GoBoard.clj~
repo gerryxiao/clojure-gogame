@@ -33,7 +33,8 @@
 				      (def paint-id? (not paint-id?))
 				      (.repaint #^JFrame this)))
 		   (getPreferredSize []
-				     (Dimension. 700 785))))
+				     (Dimension. 950 900))
+		   ))
 				      
 				      
 
@@ -85,7 +86,7 @@
 		      (.fill3DRect g2d 0 0 w w true)
 		      (.setColor g2d Color/BLACK)
 		      (.setStroke g2d (BasicStroke. (float 1)))
-		      (.setFont g2d (Font. "Times" Font/PLAIN 8))
+		      (.setFont g2d (Font. "Times" Font/BOLD 8))
 		      (doall
 			(map #(.draw g2d (new Line2D$Float u % (* 19 u) %)) pextent))
 		      (doall
@@ -134,7 +135,7 @@
 			(.draw g2d (Ellipse2D$Float. (+ (get-x last-stone  u)(/ u 4.0))
 						     (+ (get-y last-stone  u)(/ u 4.0)) (/ u 2.0) (/ u 2.0))))))
 	     (getPreferredSize []
-			      (Dimension. 500 500))))
+			      (Dimension. 800 800))))
 
 		       
 (declare w-b-button setup-mode)		      
@@ -320,6 +321,7 @@
   (.setBorderPainted #^JToolBar toolbar true)
   (.setPreferredSize aux-board (Dimension. 200 800))
   (.setPreferredSize board (Dimension. 800 800))
+  (.setPreferredSize toolbar (Dimension. 600 50))
   (doto #^JFrame main-window
 	  (.setJMenuBar menu-bar)
     
@@ -327,7 +329,7 @@
 	  (.add #^JToolBar toolbar BorderLayout/NORTH)
 	  (.add aux-board BorderLayout/EAST)
     ;(.add menu-bar)
-	  (.setPreferredSize (Dimension. 1200 800))
+	  (.setPreferredSize (Dimension. 800 800))
 	  (.pack) 
 	  (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
 	  (.setIconImage (.createImage (Toolkit/getDefaultToolkit) "images/clojure-icon.gif"))
