@@ -2,7 +2,7 @@
 (import '(javax.swing JLabel JTextField  JTextArea JList JScrollPane ListSelectionModel))
 (import '(java.util Vector))
 (import '(java.awt GridLayout))
-(import '(javax.swing.border TitledBorder))
+(import '(javax.swing.border TitledBorder EtchedBorder))
 
 
 (def aux-board (JPanel.))
@@ -10,15 +10,15 @@
 (def aux-board2 (JPanel.))
 (def aux-board3 (JPanel.))
 
-(def white-player(JLabel. "name1" (ImageIcon. "pic1") JLabel/RIGHT))
-(def black-player (JLabel. "name2" (ImageIcon. "pic2") JLabel/RIGHT))
-(def vs-player (JLabel. "VS" JLabel/CENTER))
+(def white-player(JLabel. "name1" (ImageIcon. "01.gif") JLabel/RIGHT))
+(def black-player (JLabel. "name2" (ImageIcon. "14.gif") JLabel/RIGHT))
+(def vs-player (JLabel. "<=>" JLabel/CENTER))
 
 (.setHorizontalTextPosition vs-player JLabel/CENTER)
 
-(def dialog-field  (JTextField."Hello World" 12))
+(def dialog-field  (JTextField."Hello World" 30))
 
-(def msg-area  (JTextArea. "this is a msg area" 5 20))
+(def msg-area  (JTextArea. "this is a msg area" 8 30))
 
 (def lists-data (Vector.))
 (doto lists-data
@@ -47,12 +47,13 @@
   (.add black-player))
 
 (doto aux-board1
-  (.setLayout (BorderLayout.))
-  (.add lists BorderLayout/NORTH)
+  (.setLayout (BorderLayout. 1 1))
+  (.add (JScrollPane. lists) BorderLayout/NORTH)
   (.add aux-board2 BorderLayout/SOUTH))
 
 (doto msg-area
   (.setWrapStyleWord  true)
+  (.setBorder (TitledBorder. (EtchedBorder.) "message board"))
   (.setEditable false)
   (.setFont (Font. "Times-Roman" Font/PLAIN 12)))
 
@@ -62,9 +63,10 @@
   (.add dialog-field BorderLayout/SOUTH))
 
 (doto aux-board
-  (.setLayout (BorderLayout.))
+  (.setLayout (BorderLayout. 1 1))
   (.add aux-board1 BorderLayout/NORTH)
-  (.add aux-board3 BorderLayout/SOUTH))
+  (.add aux-board3 BorderLayout/CENTER))
+  ;(.setPreferredSize (Dimension. 200 750))
   ;(.pack)
   ;(.setSize 200 800)
   ;(.setVisible true))
@@ -73,6 +75,6 @@
   (let [jf (JFrame.)]
     (doto jf
       (.add aux-board BorderLayout/CENTER)
-      ;(.setSize 200 800)
+      (.setPreferredSize (Dimension. 300 800))
       (.pack)
       (.setVisible true))))

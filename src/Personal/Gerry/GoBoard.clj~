@@ -155,7 +155,7 @@
 					  (let [x (Math/round (float (:x XY))) y (Math/round (float (:y XY)))]
 											    					    
 					      (if (stone-in-lists? {:x x :y y}) (println "sorry you canot play there")
-						  (when-not (probidden-point? (inc @id) {:x x :y y}) ;; check probidden point
+						  (when-not (forbidden-point? (inc @id) {:x x :y y}) ;; check probidden point
 						  (do 
 						    (swap! id inc)
 						    (when play-audio? (.start (Thread. #(play-sound "babycry.wav"))))
@@ -309,7 +309,7 @@
     "review" (.setVisible toolbar true)
     "view" (.setVisible toolbar true)
     "game-over" (.setVisible toolbar true)))
-
+(declare aux-board)
 
 (defn play-go []
   (.setEnabled toolbar false)
@@ -318,13 +318,16 @@
   (addButtons toolbar)
   (setup-mode "review")
   (.setBorderPainted #^JToolBar toolbar true)
+  (.setPreferredSize aux-board (Dimension. 200 800))
+  (.setPreferredSize board (Dimension. 800 800))
   (doto #^JFrame main-window
 	  (.setJMenuBar menu-bar)
     
 	  (.add #^JPanel  board BorderLayout/CENTER)
 	  (.add #^JToolBar toolbar BorderLayout/NORTH)
+	  (.add aux-board BorderLayout/EAST)
     ;(.add menu-bar)
-	  (.setSize 800 800)
+	  (.setPreferredSize (Dimension. 1200 800))
 	  (.pack) 
 	  (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
 	  (.setIconImage (.createImage (Toolkit/getDefaultToolkit) "images/clojure-icon.gif"))

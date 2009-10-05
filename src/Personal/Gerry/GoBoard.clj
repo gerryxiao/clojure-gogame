@@ -33,7 +33,8 @@
 				      (def paint-id? (not paint-id?))
 				      (.repaint #^JFrame this)))
 		   (getPreferredSize []
-				     (Dimension. 700 785))))
+				     (Dimension. 950 900))
+		   ))
 				      
 				      
 
@@ -134,7 +135,7 @@
 			(.draw g2d (Ellipse2D$Float. (+ (get-x last-stone  u)(/ u 4.0))
 						     (+ (get-y last-stone  u)(/ u 4.0)) (/ u 2.0) (/ u 2.0))))))
 	     (getPreferredSize []
-			      (Dimension. 500 500))))
+			      (Dimension. 800 800))))
 
 		       
 (declare w-b-button setup-mode)		      
@@ -309,7 +310,7 @@
     "review" (.setVisible toolbar true)
     "view" (.setVisible toolbar true)
     "game-over" (.setVisible toolbar true)))
-
+(declare aux-board)
 
 (defn play-go []
   (.setEnabled toolbar false)
@@ -318,13 +319,17 @@
   (addButtons toolbar)
   (setup-mode "review")
   (.setBorderPainted #^JToolBar toolbar true)
+  (.setPreferredSize aux-board (Dimension. 200 800))
+  (.setPreferredSize board (Dimension. 800 800))
+  (.setPreferredSize toolbar (Dimension. 600 50))
   (doto #^JFrame main-window
 	  (.setJMenuBar menu-bar)
     
 	  (.add #^JPanel  board BorderLayout/CENTER)
 	  (.add #^JToolBar toolbar BorderLayout/NORTH)
+	  (.add aux-board BorderLayout/EAST)
     ;(.add menu-bar)
-	  (.setSize 800 800)
+	  (.setPreferredSize (Dimension. 800 800))
 	  (.pack) 
 	  (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
 	  (.setIconImage (.createImage (Toolkit/getDefaultToolkit) "images/clojure-icon.gif"))
