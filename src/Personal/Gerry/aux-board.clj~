@@ -10,17 +10,24 @@
 (def aux-board2 (JPanel.))
 (def aux-board3 (JPanel.))
 
-(def white-player(JLabel. "gerry" (ImageIcon. "white-small.png") JLabel/CENTER))
-(def black-player (JLabel. "rose" (ImageIcon. "black-small.png") JLabel/CENTER))
-(def vs-player (JLabel. "<=>" JLabel/CENTER))
-(.setBorder white-player (BorderFactory/createLineBorder Color/lightGray 2))
-(.setBorder black-player (BorderFactory/createLineBorder Color/black 2))
+(def white-player(JLabel. "gerry" (ImageIcon. "white-small.png") JLabel/LEFT))
+(def black-player (JLabel. "rose" (ImageIcon. "black-small.png") JLabel/RIGHT))
+(def vs-player (JLabel. (ImageIcon. "8.gif") JLabel/CENTER))
+;(.setBorder white-player (BorderFactory/createLineBorder Color/lightGray 2))
+;(.setBorder black-player (BorderFactory/createLineBorder Color/black 2))
 
 (.setHorizontalTextPosition vs-player JLabel/CENTER)
 
-(def dialog-field  (JTextField."Hello World" 30))
+(def msg-area  (JTextArea. "this is a msg area" 8 15))
 
-(def msg-area  (JTextArea. "this is a msg area" 8 30))
+(def dialog-field  (JTextField."Hello World" 30))
+(mice-listen dialog-field (let [content (.getText dialog-field)]
+			    ;(.setText dialog-field "")
+			   (.append msg-area (str "\n" content "\n"))
+			   (.validate dialog-field)
+			   (.validate msg-area)))
+
+
 
 (def lists-data (Vector.))
 (doto lists-data
@@ -39,10 +46,10 @@
   ;(.setLayoutOrientation JList/HORIZONTAL_WRAP))
 
 (doto aux-board2
-  (.setBorder (TitledBorder. "Match"))
-  (.setLayout (GridLayout. 1 2 ))
+  (.setBorder (TitledBorder. (BorderFactory/createRaisedBevelBorder) "Match"))
+  (.setLayout (GridLayout. 3 1 ))
   (.add white-player )
-  ;(.add vs-player)
+  (.add vs-player)
   (.add black-player))
 
 (doto aux-board1
@@ -65,7 +72,7 @@
   (.setLayout (BorderLayout. 1 1))
   (.add aux-board1 BorderLayout/NORTH)
   (.add aux-board3 BorderLayout/CENTER))
-  ;(.setPreferredSize (Dimension. 200 750))
+  ;(.setPreferredSize (Dimension. 200 800))
   ;(.pack)
   ;(.setSize 200 800)
   ;(.setVisible true))
@@ -74,6 +81,6 @@
   (let [jf (JFrame.)]
     (doto jf
       (.add aux-board BorderLayout/CENTER)
-      (.setPreferredSize (Dimension. 300 800))
+      (.setPreferredSize (Dimension. 200 (* 0.75 (:h screen-size))))
       (.pack)
       (.setVisible true))))

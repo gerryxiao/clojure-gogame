@@ -7,12 +7,16 @@
 	 '(java.awt.event KeyEvent ActionListener)
 	 '(javax.swing JCheckBoxMenuItem))
 (def screen-size 
-     {:w (.. Toolkit getDefaultToolkit getScreenSize getWidth) :h (.. Toolkit getDefaultToolkit getScreenSize getHeight)})
-(def pframe-size (Dimension. (* 1.15 (* 0.8 (:h screen-size))) (* 0.8 (:h screen-size))))
-(def mframe-size (Dimension. (* 1.15 (* 1.0 (:h screen-size))) (* 1.0 (:h screen-size))))
-(def pboard-size (Dimension. (* 0.75 (:h screen-size)) (* 0.75 (:h screen-size))))
-(def mboard-size (Dimension. (* 0.9 (:h screen-size)) (* 0.9 (:h screen-size))))
-(def paux-size (Dimension. (* 0.2 (:h screen-size)) (.getHeight pboard-size)))
+     (let [screensize (.. Toolkit getDefaultToolkit getScreenSize)]
+       {:w (.getWidth screensize) :h (.getHeight screensize)}))
+
+(def max-length (if (> (:h screen-size) (:w screen-size )) (:w screen-size) (:h screen-size))) ;;availble max width and height for board
+
+(def pframe-size (Dimension. 940 900))  ;preferred size
+(def mframe-size (Dimension. (* 1.15 (* 1.0 max-length)) (* 1.0 max-length)))
+(def pboard-size (Dimension. 800 800))
+(def mboard-size (Dimension. (* 0.9 max-length) (* 0.9 max-length)))
+(def paux-size (Dimension. 180 800))
 (def maux-size (Dimension. (* 0.2 (:h screen-size)) (.getHeight mboard-size)))
 	 
 (def main-window (proxy [JFrame ActionListener] [ "Clojure 围棋游戏 作者：gerryxiao@gmail.com"]
@@ -208,6 +212,10 @@
   `(. ~target addMouseListener (proxy [MouseAdapter] []
 				 (mousePressed [e#]
 					       ~@action ))))
+(defmacro action-listen [target & action]
+  `(. ~target addActionListener (proxy [ActionListener] [] 
+				  (actionPerformed [e#]
+						   ~@action))))
 (mice-listen new-menuitem (reset-envs) (reset-snaps) (.repaint main-window))
 (mice-listen save-menuitem (let [fc (JFileChooser.)
 				 return (.showSaveDialog fc nil)]

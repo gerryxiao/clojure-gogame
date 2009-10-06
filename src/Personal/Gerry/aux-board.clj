@@ -10,17 +10,23 @@
 (def aux-board2 (JPanel.))
 (def aux-board3 (JPanel.))
 
-(def white-player(JLabel. "gerry" (ImageIcon. "white-small.png") JLabel/CENTER))
-(def black-player (JLabel. "rose" (ImageIcon. "black-small.png") JLabel/CENTER))
-(def vs-player (JLabel. "<=>" JLabel/CENTER))
-(.setBorder white-player (BorderFactory/createLineBorder Color/lightGray 2))
-(.setBorder black-player (BorderFactory/createLineBorder Color/black 2))
+(def white-player(JLabel. "gerry" (ImageIcon. "white-small.png") JLabel/LEFT))
+(def black-player (JLabel. "rose" (ImageIcon. "black-small.png") JLabel/RIGHT))
+(def vs-player (JLabel. (ImageIcon. "8.gif") JLabel/CENTER))
+;(.setBorder white-player (BorderFactory/createLineBorder Color/lightGray 2))
+;(.setBorder black-player (BorderFactory/createLineBorder Color/black 2))
 
 (.setHorizontalTextPosition vs-player JLabel/CENTER)
 
-(def dialog-field  (JTextField."Hello World" 30))
+(def msg-area  (JTextArea. "this is a msg area" 8 15))
 
-(def msg-area  (JTextArea. "this is a msg area" 8 30))
+(def dialog-field  (JTextField."Hello World" 30))
+(action-listen dialog-field (let [content (.getText dialog-field)]
+			   (.setText dialog-field "")
+			   (.append msg-area (str  content "\n"))
+			   (.setCaretPosition msg-area (.. msg-area getDocument getLength))))
+
+
 
 (def lists-data (Vector.))
 (doto lists-data
@@ -39,10 +45,10 @@
   ;(.setLayoutOrientation JList/HORIZONTAL_WRAP))
 
 (doto aux-board2
-  (.setBorder (TitledBorder. "Match"))
-  (.setLayout (GridLayout. 1 2 ))
+  (.setBorder (TitledBorder. (BorderFactory/createRaisedBevelBorder) "Match"))
+  (.setLayout (GridLayout. 3 1 ))
   (.add white-player )
-  ;(.add vs-player)
+  (.add vs-player)
   (.add black-player))
 
 (doto aux-board1
