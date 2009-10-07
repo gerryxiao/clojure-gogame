@@ -5,7 +5,9 @@
 	 '(java.net URL) '(javax.swing JMenuBar JMenu JMenuItem JCheckBoxMenuItem 
 				       JToolBar JToolBar$Separator JButton ImageIcon JFileChooser)
 	 '(java.awt.event KeyEvent ActionListener)
-	 '(javax.swing JCheckBoxMenuItem))
+	 '(javax.swing JCheckBoxMenuItem)
+	 '(java.awt.image BufferedImage)
+	 '(javax.imageio ImageIO))
 (def screen-size 
      (let [screensize (.. Toolkit getDefaultToolkit getScreenSize)]
        {:w (.getWidth screensize) :h (.getHeight screensize)}))
@@ -121,13 +123,13 @@
 		      
 		      (doseq [stone @whole-lists]
 			(when (and (not-empty stone) (= (:liberty stone) nil))
-			  ;(.setColor g2d Color/black)
-			  ;(.draw g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
-			  (let [bimg (loadImage (str "images" file-separator "blackstone.gif"))
-				wimg (loadImage (str "images" file-separator "whitestone.gif"))]
-				;at (AffineTransform/getTranslateInstance 0 0)]
-			    ;(.setTransform g2d at)
-			    ;(.scale g2d 0.1 0.1)
+			  
+			 ; (let [bimg (loadImage (str "images" file-separator "blackstone.gif"))  ;;change old loadImage to new ImageIO
+				;wimg (loadImage (str "images" file-separator "whitestone.gif"))]
+			  (let [bimg (ImageIO/read (File. (str "images" file-separator "blackstone.gif")))
+				wimg (ImageIO/read (File. (str "images" file-separator "whitestone.gif")))]	
+			   
+			    
 			  
 			  
 			  
@@ -175,7 +177,7 @@
 						  (when-not (forbidden-point? (inc @id) {:x x :y y}) ;; check probidden point
 						  (do 
 						    (swap! id inc)
-						    (when play-audio? (.start (Thread. #(play-sound "babycry.wav"))))
+						    (when play-audio? (.start (Thread. #(play-sound (str "sound" file-separator "click.wav")))))
 					  
 						    (go @id x y)
 						    (if (even? @id)

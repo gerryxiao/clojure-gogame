@@ -175,7 +175,7 @@
 						  (when-not (forbidden-point? (inc @id) {:x x :y y}) ;; check probidden point
 						  (do 
 						    (swap! id inc)
-						    (when play-audio? (.start (Thread. #(play-sound "babycry.wav"))))
+						    (when play-audio? (.start (Thread. #(play-sound (str "sound" file-separator "click.wav")))))
 					  
 						    (go @id x y)
 						    (if (even? @id)
@@ -212,6 +212,10 @@
   `(. ~target addMouseListener (proxy [MouseAdapter] []
 				 (mousePressed [e#]
 					       ~@action ))))
+(defmacro action-listen [target & action]
+  `(. ~target addActionListener (proxy [ActionListener] [] 
+				  (actionPerformed [e#]
+						   ~@action))))
 (mice-listen new-menuitem (reset-envs) (reset-snaps) (.repaint main-window))
 (mice-listen save-menuitem (let [fc (JFileChooser.)
 				 return (.showSaveDialog fc nil)]
