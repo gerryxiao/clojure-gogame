@@ -25,6 +25,10 @@
 
 (defstruct stone :id :loc :liberty)  ;loc is {:x,:y} liberty default to nil, if 0,then it's captured.死子气为0
 
+(def data (atom {:player {:w nil :b nil} :qipu nil :result nil :comment nil :handcap nil}))  ;; data will be saved in disks
+
+(def go-config (atom {:sound nil :coord nil :mode nil :paint-id nil :undo nil}))  ;;config will be saved to disk
+
 (def file-separator File/separator)
 
 (def snapshots (atom [])) ; environments  snapshots
@@ -36,6 +40,9 @@
 (def w-captured-groups (atom []))
 
 (def b-captured-groups (atom [])) ; dead-groups move to here as backup data
+
+(defn simply-whole-lists [lists]   ;;simply whole-lists in order to save smaller data
+  (for [s lists] (vals (get-in s [:loc]))))
 
 (defn reflect-warn [ ]   ;debug mode setup
   (if *debug* (set! *warn-on-reflection* true) 
@@ -80,8 +87,8 @@
   (let [liberty-list (map liberty-of-stone group)]
     (reduce + liberty-list)))
 
-(defn liberty-of-group-real [group]
-  (let [grp (for [id group] (nth @whole-lists (dec id)))  ;;how to cal qi??
+(defn liberty-of-group-real [group] ;qi of group
+  (let [grp (for [id group] (nth @whole-lists (dec id)))  
 	ns (for [s grp] (filter (complement nil?)(vals (get-neighbors s))))
 	part1 (filter stone-in-lists? (flatten ns))
 	part2 (filter (complement stone-in-lists?) (flatten ns))]
@@ -186,8 +193,11 @@
     (reset! w-captured-groups (:wdead-groups snap))
     (dosync 
      (ref-set whole-lists (:lists snap)))))
-(declare play-sound)		      
+
+(declare play-sound)	
+	      
 (declare dead-point?)
+
 (defn play-one-stone [number loc]
   (let [s (struct stone number loc)
 	groups (if (odd? number) black-id-groups white-id-groups)]
@@ -200,7 +210,8 @@
 	  back (if (odd? number) b-captured-groups w-captured-groups)]
       (move-dead-stones @groups back)
       (mark-deadstones @groups)
-      (println @whole-lists)
+      ;(println @whole-lists)
+      (println  "simply is " (simply-whole-lists @whole-lists))
       (remove-dead-stones groups)
       (save-snapshot number @whole-lists @black-id-groups @white-id-groups @b-captured-groups @w-captured-groups)
       (test-content "after remove!" ))))
@@ -211,14 +222,35 @@
 	      white-id-groups (atom @white-id-groups)
 	      b-captured-groups (atom @b-captured-groups)
 	      w-captured-groups (atom @w-captured-groups)
-	      snapshots (atom @snapshots)]
+	      snapshots (atom [])]
       (play-one-stone aid loc)
       (let [grp (if (odd? aid) @black-id-groups @white-id-groups) ]
 	(if (includes? (map liberty-of-group-real grp) 0) true false))))
 					   
 						  
 	    
-	    
+(defn load-data [simple-whole-lists]
+  (binding [whole-lists (ref [])     ;setup environment to protect real environs
+	    black-id-groups (atom [])
+	    white-id-groups (atom [])
+	    b-captured-groups (atom [])
+	    w-captured-groups (atom [])
+	    snapshots (atom [])
+	    ]
+    (dotimes [idx (count simple-whole-lists)] 
+      (let [e (nth simple-whole-lists idx)]
+	(play-one-stone (inc  idx) {:x (first e) :y (second e)})))
+    {:snapshots @snapshots}))  
+
+(defn load-data1 [simple-whole-lists]  ;change environmnet to loading data
+  (let [e (load-data simple-whole-lists)
+        sn (:snapshots e)]
+    (reset! snapshots sn)
+    (println "snaps is" @snapshots)
+    (println)
+    (println "sn is " sn)
+    (get-snapshot (count @snapshots))
+    ))
 	    
 	    
 	
@@ -226,7 +258,7 @@
 (defn go [n x y]
   (play-one-stone n {:x x :y y}))
 
-(load "GoBoard")
+(load "GoBoard1")
 
 (defn -main []
   (play-go))
@@ -252,3 +284,6 @@
 
 	 
 (load "aux-board")	    
+
+
+(-main)

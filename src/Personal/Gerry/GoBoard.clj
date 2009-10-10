@@ -124,12 +124,12 @@
 		      (doseq [stone @whole-lists]
 			(when (and (not-empty stone) (= (:liberty stone) nil))
 			  
-			 ; (let [bimg (loadImage (str "images" file-separator "blackstone.gif"))  ;;change old loadImage to new ImageIO
-				;wimg (loadImage (str "images" file-separator "whitestone.gif"))]
-			  (let [bimg (ImageIO/read (File. (str "images" file-separator "blackstone.gif")))
-				wimg (ImageIO/read (File. (str "images" file-separator "whitestone.gif")))]	
+			 ; (let [bimg (loadImage (str "images" file-separator "black.gif"))  ;;change old loadImage to new ImageIO
+				;wimg (loadImage (str "images" file-separator "white.gif"))]
+			  (let [bimg (ImageIO/read (File. (str "images" file-separator "black.gif")))
+				wimg (ImageIO/read (File. (str "images" file-separator "white.gif")))]	
 			   
-			    
+			    (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
 			  
 			  
 			  
@@ -177,7 +177,7 @@
 						  (when-not (forbidden-point? (inc @id) {:x x :y y}) ;; check probidden point
 						  (do 
 						    (swap! id inc)
-						    (when play-audio? (.start (Thread. #(play-sound (str "sound" file-separator "click.wav")))))
+						    (when play-audio? (.start (Thread. #(play-sound "stone.wav"))))
 					  
 						    (go @id x y)
 						    (if (even? @id)

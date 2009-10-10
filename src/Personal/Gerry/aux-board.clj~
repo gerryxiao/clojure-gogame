@@ -21,11 +21,10 @@
 (def msg-area  (JTextArea. "this is a msg area" 8 15))
 
 (def dialog-field  (JTextField."Hello World" 30))
-(mice-listen dialog-field (let [content (.getText dialog-field)]
-			    ;(.setText dialog-field "")
-			   (.append msg-area (str "\n" content "\n"))
-			   (.validate dialog-field)
-			   (.validate msg-area)))
+(action-listen dialog-field (let [content (.getText dialog-field)]
+			   (.setText dialog-field "")
+			   (.append msg-area (str  content "\n"))
+			   (.setCaretPosition msg-area (.. msg-area getDocument getLength))))
 
 
 

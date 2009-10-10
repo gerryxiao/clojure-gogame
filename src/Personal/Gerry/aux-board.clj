@@ -10,8 +10,8 @@
 (def aux-board2 (JPanel.))
 (def aux-board3 (JPanel.))
 
-(def white-player(JLabel. "gerry" (ImageIcon. "white-small.png") JLabel/LEFT))
-(def black-player (JLabel. "rose" (ImageIcon. "black-small.png") JLabel/RIGHT))
+(def white-player(JLabel. "gerry" (ImageIcon. "w24.png") JLabel/LEFT))
+(def black-player (JLabel. "rose" (ImageIcon. "b24.png") JLabel/RIGHT))
 (def vs-player (JLabel. (ImageIcon. "8.gif") JLabel/CENTER))
 ;(.setBorder white-player (BorderFactory/createLineBorder Color/lightGray 2))
 ;(.setBorder black-player (BorderFactory/createLineBorder Color/black 2))
