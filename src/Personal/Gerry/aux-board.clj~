@@ -10,13 +10,37 @@
 (def aux-board2 (JPanel.))
 (def aux-board3 (JPanel.))
 
-(def white-player(JLabel. "gerry" (ImageIcon. "white-small.png") JLabel/LEFT))
-(def black-player (JLabel. "rose" (ImageIcon. "black-small.png") JLabel/RIGHT))
-(def vs-player (JLabel. (ImageIcon. "8.gif") JLabel/CENTER))
+(def white-player(JLabel. ((get-players-name @data) :w) (ImageIcon. "w24.png") JLabel/LEFT))
+(def black-player (JLabel. ((get-players-name @data) :b) (ImageIcon. "b24.png") JLabel/RIGHT))
+(def vs-player (JLabel. (get-result @data) (ImageIcon. "8.gif") JLabel/CENTER))
 ;(.setBorder white-player (BorderFactory/createLineBorder Color/lightGray 2))
 ;(.setBorder black-player (BorderFactory/createLineBorder Color/black 2))
 
 (.setHorizontalTextPosition vs-player JLabel/CENTER)
+
+(.addMouseListener white-player (proxy [MouseAdapter] []
+		   (mousePressed [#^MouseEvent e]
+				 (when (.isControlDown e)
+				   (let [content (JOptionPane/showInputDialog nil "The name of white:" "Information of this game" JOptionPane/PLAIN_MESSAGE)]
+				     (set-white-player-name content)
+				     (.setText white-player ((get-players-name @data):w))
+				     (.validate white-player))))))
+
+(.addMouseListener black-player (proxy [MouseAdapter] []
+		   (mousePressed [#^MouseEvent e]
+				 (when (.isControlDown e)
+				   (let [content (JOptionPane/showInputDialog nil "The name of black:" "Information of this game" JOptionPane/PLAIN_MESSAGE)]
+				     
+				     (set-black-player-name content)
+				     (.setText black-player ((get-players-name @data) :b)))))))
+(.addMouseListener vs-player (proxy [MouseAdapter] []
+		   (mousePressed [#^MouseEvent e]
+				 (when (.isControlDown e)
+				   (let [content (JOptionPane/showInputDialog nil "The result of the game:" "Information of this game" JOptionPane/PLAIN_MESSAGE)]
+				     
+				     (set-result content)
+				     (.setText vs-player (get-result @data)))))))
+
 
 (def msg-area  (JTextArea. "this is a msg area" 8 15))
 

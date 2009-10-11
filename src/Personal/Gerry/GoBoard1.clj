@@ -1,6 +1,6 @@
  ;;go game gui file
+
 (in-ns 'Personal.Gerry.GoGame)
-;(use 'clojure.parallel)
 (import '(java.awt Container Image MediaTracker Toolkit)
 	 '(java.net URL) '(javax.swing JMenuBar JMenu JMenuItem JCheckBoxMenuItem 
 				       JToolBar JToolBar$Separator JButton ImageIcon JFileChooser)
@@ -23,29 +23,37 @@
 	 
 (def main-window (proxy [JFrame ActionListener] [ "Clojure 围棋游戏 作者：gerryxiao@gmail.com"]
    (actionPerformed [#^ActionEvent e]
-		    (when (and (not (empty? @whole-lists)) (.equals (.getActionCommand e) "previous"))
-		      (condp = @id
-			1 (do (reset-envs)
-			      (.repaint #^JFrame this))
-			(do (get-snapshot (dec @id)) ;;error
-			    (println "id is " @id)
-			    (println "count is" (count @snapshots))
-			    (.repaint #^JFrame this))))
+     (when (and (not (empty? @whole-lists)) (.equals (.getActionCommand e) "previous"))
+       (condp = @id
+	 1 (do (reset-envs)
+	       (.repaint #^JFrame this))
+	 (do (get-snapshot (dec @id)) 
+	     (println "id is " @id)
+	     (println "count is" (count @snapshots))
+	     (.repaint #^JFrame this))))
 				     				     		      
-		    (when (and (.equals (.getActionCommand e) "next") (> (count @snapshots) @id))
-		      (get-snapshot (inc @id))
-		      (.repaint #^JFrame this))
+     (when (and (.equals (.getActionCommand e) "next") (> (count @snapshots) @id))
+       (get-snapshot (inc @id))
+       (.repaint #^JFrame this))
 				      
-		    (when (.equals (.getActionCommand e) "last")
-		      (get-snapshot (count @snapshots))
-		      (.repaint #^JFrame this))
+     (when (.equals (.getActionCommand e) "last")
+       (get-snapshot (count @snapshots))
+       (.repaint #^JFrame this))
 				      
-		    (when (.equals (.getActionCommand e) "first")
-		      (reset-envs)
-		      (.repaint #^JFrame this))
-		    (when (.equals (.getActionCommand e) "pass")
-		      (def paint-id? (not paint-id?))
-		      (.repaint #^JFrame this)))
+     (when (.equals (.getActionCommand e) "first")
+       (reset-envs)
+       (.repaint #^JFrame this))
+
+     (when (and (not (empty? @whole-lists)) (.equals (.getActionCommand e) "undo"))
+					;(get-snapshot (dec @id))  ;;problem
+					;(swap! snapshots pop)
+       (condp = @id
+	 1 (do (reset-envs) (swap! snapshots empty)
+	       (.repaint #^JFrame this))
+	 (do (get-snapshot (dec @id)) 
+	     (swap! snapshots pop)
+	     (.repaint #^JFrame this)))))
+		      
    (getPreferredSize []
 		     pframe-size)
    (getMaximumSize   []
@@ -85,75 +93,74 @@
 (def draw-coords? true)
 
 (def board (proxy [JPanel] []
-	     (paintComponent  [g]
-		    (proxy-super paintComponent #^Graphics2D g)
-		    (let [g2d #^Graphics2D g
-			  w (.getWidth #^JPanel this)
-			  u (/ w 20.0)
-			  extent (range u (* u 20) u)
-			  ;pextent (par (vec extent))
-			  coords (for [x extent y extent] {:x x :y y})
-			  last-stone (last @whole-lists)]
+  (paintComponent [g]
+     (proxy-super paintComponent #^Graphics2D g)
+     (let [g2d #^Graphics2D g
+	   w (.getWidth #^JPanel this)
+	   u (/ w 20.0)
+	   extent (range u (* u 20) u)
+	   coords (for [x extent y extent] {:x x :y y})
+	   last-stone (last @whole-lists)]
 					;(println "u is" u)  ;debug
 					;(println "coords is " coords) ;debug
-		      (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
-		      (.draw3DRect g2d 0 0 w w true)
-		      (.setColor g2d (Color. 212 167 102))
-		      (.fill3DRect g2d 0 0 w w true)
-		      (.setColor g2d Color/BLACK)
-		      (.setStroke g2d (BasicStroke. (float 1)))
-		      (.setFont g2d (Font. "Times" Font/BOLD 8))
-		      (doall
-		       (map #(.draw g2d (new Line2D$Float u % (* 19 u) %)) extent))
-		      (doall
-		       (map #(.draw g2d (new Line2D$Float % u % (* 19 u))) extent))
+       (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
+       (.draw3DRect g2d 0 0 w w true)
+       (.setColor g2d (Color. 212 167 102))
+       (.fill3DRect g2d 0 0 w w true)
+       (.setColor g2d Color/BLACK)
+       (.setStroke g2d (BasicStroke. (float 1)))
+       (.setFont g2d (Font. "Times" Font/BOLD 8))
+       (doall
+	(map #(.draw g2d (new Line2D$Float u % (* 19 u) %)) extent))
+       (doall
+	(map #(.draw g2d (new Line2D$Float % u % (* 19 u))) extent))
 		       ;(when draw-coords? (doseq [x extent]			
 			;(.drawString #^Graphics2D g2d (str (char (+ 96 (Math/round (/ x (float u)))))) (float (* 0.5 u))(float x))
 			;(.drawString #^Graphics2D g2d (str (Math/round (/ x (float u)))) (float x)(float (* 0.5 u)))))
-		      (when draw-coords? 
-			(doall
-			 (map #(.drawString g2d (str (char (+ 96 (Math/round (float (/ % u)))))) (float (* 0.5 u)) (float %)) extent))
-			(doall 
-			 (map #(.drawString #^Graphics2D g2d (str (Math/round (float (/ %  u)))) (float %)(float (* 0.5 u))) extent)))
-		      (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 3.9) (* u 0.2) (* u 0.2)))
-		      (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 15.9) (* u 0.2) (* u 0.2)))
-		      (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 3.9) (* u 0.2) (* u 0.2))) ;;draw 5 points:xing and tianyuan
-		      (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 15.9) (* u 0.2) (* u 0.2)))
-		      (.draw g2d (Ellipse2D$Float. (* u 9.9) (* u 9.9) (* u 0.2) (* u 0.2)))
+       (when draw-coords? 
+	 (doall
+	  (map #(.drawString g2d (str (char (+ 96 (Math/round (float (/ % u)))))) (float (* 0.5 u)) (float %)) extent))
+	 (doall 
+	  (map #(.drawString #^Graphics2D g2d (str (Math/round (float (/ %  u)))) (float %)(float (* 0.5 u))) extent)))
+       (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 3.9) (* u 0.2) (* u 0.2)))
+       (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 15.9) (* u 0.2) (* u 0.2)))
+       (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 3.9) (* u 0.2) (* u 0.2))) ;;draw 5 points:xing and tianyuan
+       (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 15.9) (* u 0.2) (* u 0.2)))
+       (.draw g2d (Ellipse2D$Float. (* u 9.9) (* u 9.9) (* u 0.2) (* u 0.2)))
 		      
-		      (doseq [stone @whole-lists]
-			(when (and (not-empty stone) (= (:liberty stone) nil))
+       (doseq [stone @whole-lists]
+	 (when (and (not-empty stone) (= (:liberty stone) nil))
 			  
 			  ; (let [bimg (loadImage (str "images" file-separator "black.gif"))  ;;change old loadImage to new ImageIO
 			  ;wimg (loadImage (str "images" file-separator "white.gif"))]
-			  (let [bimg (ImageIO/read (File. (str "images" file-separator "black.gif")))
-				wimg (ImageIO/read (File. (str "images" file-separator "white.gif")))]	
+	   (let [bimg (ImageIO/read (File. (str "images" file-separator "black.gif")))
+		 wimg (ImageIO/read (File. (str "images" file-separator "white.gif")))]	
 			   
-			    (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
+	     (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
 			  
 			  
 			  
-			    (if (odd? (:id stone))
+	     (if (odd? (:id stone))
 					; (.drawImage g2d bimg at this)
 					; (.drawImage g2d wimg at this)))
 			     
-			      (.drawImage g2d bimg (get-x stone u) (get-y stone u) u u this)
-			      (.drawImage g2d wimg (get-x stone u) (get-y stone u) u u this)))
+	       (.drawImage g2d bimg (get-x stone u) (get-y stone u) u u this)
+	       (.drawImage g2d wimg (get-x stone u) (get-y stone u) u u this)))
 					;(.fill g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
-			  (when paint-id?
-			    (.setColor g2d Color/red)
-			    (.setFont g2d (Font. "Times" Font/PLAIN 10))
-			    (.drawString g2d (str (:id stone)) (float (-  (:x (get-stone-cord stone u)) (* u 0.1)))
-					 (float (-  (:y (get-stone-cord stone u)) (* u 0.03)))))))
+	   (when paint-id?
+	     (.setColor g2d Color/red)
+	     (.setFont g2d (Font. "Times" Font/PLAIN 10))
+	     (.drawString g2d (str (:id stone)) (float (-  (:x (get-stone-cord stone u)) (* u 0.1)))
+			  (float (-  (:y (get-stone-cord stone u)) (* u 0.03)))))))
 			
-		      (when (and (not (nil? last-stone)) (not paint-id?))
-			(if (odd? (:id last-stone)) (.setColor g2d Color/white) (.setColor g2d Color/black))
-			(.draw g2d (Ellipse2D$Float. (+ (get-x last-stone  u)(/ u 4.0))
-						     (+ (get-y last-stone  u)(/ u 4.0)) (/ u 2.0) (/ u 2.0))))))
-	     (getPreferredSize []
-			      pboard-size)
-	     (getMaximumSize  []
-			      mboard-size)))
+       (when (and (not (nil? last-stone)) (not paint-id?))
+	 (if (odd? (:id last-stone)) (.setColor g2d Color/white) (.setColor g2d Color/black))
+	 (.draw g2d (Ellipse2D$Float. (+ (get-x last-stone  u)(/ u 4.0))
+						   (+ (get-y last-stone  u)(/ u 4.0)) (/ u 2.0) (/ u 2.0))))))
+  (getPreferredSize []
+		    pboard-size)
+  (getMaximumSize  []
+		   mboard-size)))
 
 		       
 (declare w-b-button setup-mode)		      
@@ -161,29 +168,29 @@
 (.addMouseListener #^JPanel board 
     (proxy [MouseAdapter] []
       (mousePressed [#^MouseEvent e]
-		    (when (= (count @snapshots) (count @whole-lists))
-		      (println {:x (.getX e) :y (.getY e)}) ;debug
-		      (let [x (.getX e) y (.getY e) 
-			    w (.getWidth #^JPanel board)
-			    u (/ w  20.0)
-			    extent (range u (* u 20.0) u)
-			    coords (for [a extent b extent] {:x a :y b})
-			    xy  (set-xy x y coords)
-			    XY (if (empty? xy) nil (trans-coord (:x (first xy)) (:y (first xy)) u))]
+	(when (= (count @snapshots) (count @whole-lists))
+	  (println {:x (.getX e) :y (.getY e)}) ;debug
+	  (let [x (.getX e) y (.getY e) 
+		w (.getWidth #^JPanel board)
+		u (/ w  20.0)
+		extent (range u (* u 20.0) u)
+		coords (for [a extent b extent] {:x a :y b})
+		xy  (set-xy x y coords)
+		XY (if (empty? xy) nil (trans-coord (:x (first xy)) (:y (first xy)) u))]
 					    
-			(when (not (nil? XY))
-			  (let [x (Math/round (float (:x XY))) y (Math/round (float (:y XY)))]
+	    (when (not (nil? XY))
+	      (let [x (Math/round (float (:x XY))) y (Math/round (float (:y XY)))]
 											    					    
-			    (if (stone-in-lists? {:x x :y y}) (println "sorry you canot play there")
-				(when-not (forbidden-point? (inc @id) {:x x :y y}) ;; check probidden point
-				  (do 
-				    (swap! id inc)
-				    (when play-audio? (.start (Thread. #(play-sound "stone.wav"))))
+		(if (stone-in-lists? {:x x :y y}) (println "sorry you canot play there")
+		    (when-not (forbidden-point? (inc @id) {:x x :y y}) ;; check probidden point
+		      (do 
+			(swap! id inc)
+			(when play-audio? (.start (Thread. #(play-sound "stone.wav"))))
 					  
-				    (go @id x y)
-				    (if (even? @id)
-				      (.setIcon w-b-button (ImageIcon. "images/gogui-black-24x24.png"))
-				      (.setIcon w-b-button (ImageIcon. "images/gogui-white-24x24.png")))))))))))))
+			(go @id x y)
+			(if (even? @id)
+			  (.setIcon w-b-button (ImageIcon. "images/gogui-black-24x24.png"))
+			  (.setIcon w-b-button (ImageIcon. "images/gogui-white-24x24.png")))))))))))))
 						  ;(.repaint #^JPanel board)
 						  
 
@@ -225,7 +232,7 @@
   `(. ~target addActionListener (proxy [ActionListener] [] 
 				  (actionPerformed [e#]
 						   ~@action))))
-(mice-listen new-menuitem (reset-envs) (reset-snaps) (.repaint main-window))
+(mice-listen new-menuitem (reset-envs) (reset-snaps) (reset-data) (.repaint main-window))
 
 (mice-listen save-menuitem (let [fc (JFileChooser.)
 				 return (.showSaveDialog fc nil)]
@@ -241,6 +248,7 @@
 			       (let [file (.getSelectedFile fc)
 				     data1 (load-data-from-file (.getPath file))
 				     qipu (:qipu data1)]
+				 (reset! data data1)
 				 (println (.getName file))
 					;(compare-and-set! snapshots @snapshots data)
 					;(get-snapshot (count data))
@@ -329,7 +337,7 @@
 	#^JButton button2 (navigate-button "next" "next" "next step " "next")
 	#^JButton button3 (navigate-button "first" "first" "go to first" "first")
 	#^JButton button4 (navigate-button "last" "last" "go to last" "last")
-	#^JButton button5 (navigate-button "pass" "pass" "add id number" "pass")]
+	#^JButton button5 (navigate-button "undo" "undo" "undo to previous" "undo")]
     (.add  jt button1)
     (.addSeparator jt)
     (.add jt button2)

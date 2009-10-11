@@ -8,6 +8,7 @@
   (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas Dimension RenderingHints BorderLayout)
 	   (javax.swing.border BevelBorder)
 	   (javax.swing JFrame JPanel BorderFactory) (java.awt.event MouseAdapter MouseEvent ActionEvent)
+	   (javax.swing JOptionPane)
 	   (java.awt.geom Line2D$Float Ellipse2D$Float AffineTransform )
 	   (java.util Properties)(java.io File)
 	   (javax.sound.sampled AudioFormat AudioInputStream SourceDataLine DataLine$Info AudioSystem))
@@ -25,7 +26,7 @@
 
 (defstruct stone :id :loc :liberty)  ;loc is {:x,:y} liberty default to nil, if 0,then it's captured.死子气为0
 
-(def data (atom {:player {:w nil :b nil} :qipu nil :result nil :comment nil :handcap nil}))  ;; data will be saved in disks
+(def data (atom {:players {:w nil :b nil} :qipu nil :result nil :comments []  :handicap nil})) ;; data will be saved in disks
 
 (def go-config (atom {:sound nil :coord nil :mode nil :paint-id nil :undo nil}))  ;;config will be saved to disk
 
@@ -49,6 +50,37 @@
       (set! *warn-on-reflection* false)))
 
 (reflect-warn)
+
+(defn reset-data []
+  (swap! data assoc :players {:w nil :b nil} :qipu nil :result nil :comments [] :handicap nil))
+
+(defn get-players-name [the-data]
+  (let [players (the-data :players)]
+    (if players players {:w "nobody" :b "nobody"})))
+
+(defn get-comments [the-data]
+  (:comment the-data))
+
+(defn get-qipu [the-data]
+  (:qipu the-data))
+
+(defn get-result [the-data]
+  (:result the-data))
+
+(defn set-players-name [name]
+  (swap! data assoc :players name))
+
+(defn set-white-player-name [name]
+  (swap! data assoc-in [:players :w] name))
+(defn set-black-player-name [name]
+  (swap! data assoc-in [:players :b] name))
+
+(defn set-result [theResult]
+  (swap! data assoc :result theResult))
+
+(defn add-to-comments [n comm]
+  (let [content (get-comments data)]
+    (swap! data assoc :comment (conj content {:id n :comment comm}))))
 
 (defn getloc-from-id [id]
   (get-in @whole-lists [(dec id) :loc]))
@@ -186,7 +218,7 @@
 
 (defn get-snapshot [n]
   (let [snap (get @snapshots (dec n) )]
-    (reset! id  (:id snap)) ;;;problem???
+    (reset! id  (:id snap)) 
     (reset! black-id-groups  (:bgroups snap))
     (reset! white-id-groups  (:wgroups snap))
     (reset! b-captured-groups (:bdead-groups snap))
@@ -281,7 +313,10 @@
     (.drain sourcedataline)
     (.close sourcedataline)))
 
+;;dialog-box
 
+(defn show-warning-box [ parent msg title]
+  (JOptionPane/showMessageDialog parent msg title JOptionPane/WARNING_MESSAGE))
 	 
 (load "aux-board")	    
 
