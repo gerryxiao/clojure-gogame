@@ -19,28 +19,37 @@
 (.setHorizontalTextPosition vs-player JLabel/CENTER)
 
 (.addMouseListener white-player (proxy [MouseAdapter] []
-		   (mousePressed [#^MouseEvent e]
-				 (when (.isControlDown e)
-				   (let [content (JOptionPane/showInputDialog nil "The name of white:" "Information of this game" JOptionPane/PLAIN_MESSAGE)]
-				     (set-white-player-name content)
-				     (.setText white-player ((get-players-name @data):w))
-				     (.validate white-player))))))
+  (mousePressed [#^MouseEvent e]
+    (when (.isControlDown e)
+      (let [content (JOptionPane/showInputDialog nil "The name of white:" "Information of this game" JOptionPane/PLAIN_MESSAGE)]
+	(set-white-player-name content)
+	;(.setText white-player ((get-players-name @data):w))
+	(.validate white-player))))))
 
 (.addMouseListener black-player (proxy [MouseAdapter] []
-		   (mousePressed [#^MouseEvent e]
-				 (when (.isControlDown e)
-				   (let [content (JOptionPane/showInputDialog nil "The name of black:" "Information of this game" JOptionPane/PLAIN_MESSAGE)]
+  (mousePressed [#^MouseEvent e]
+    (when (.isControlDown e)
+      (let [content (JOptionPane/showInputDialog nil "The name of black:" "Information of this game" JOptionPane/PLAIN_MESSAGE)]
 				     
-				     (set-black-player-name content)
-				     (.setText black-player ((get-players-name @data) :b)))))))
+	(set-black-player-name content)
+	;(.setText black-player ((get-players-name @data) :b))
+	)))))
 (.addMouseListener vs-player (proxy [MouseAdapter] []
-		   (mousePressed [#^MouseEvent e]
-				 (when (.isControlDown e)
-				   (let [content (JOptionPane/showInputDialog nil "The result of the game:" "Information of this game" JOptionPane/PLAIN_MESSAGE)]
+  (mousePressed [#^MouseEvent e]
+    (when (.isControlDown e)
+      (let [content (JOptionPane/showInputDialog nil "The result of the game:" "Information of this game" JOptionPane/PLAIN_MESSAGE)]
 				     
-				     (set-result content)
-				     (.setText vs-player (get-result @data)))))))
-
+	(set-result content)
+	;(.setText vs-player (get-result @data))
+	)))))
+(def data-watcher (agent 0))
+(defn data-watcher-action [v r]
+  (.setText black-player ((get-players-name @data) :b))
+  (.setText white-player ((get-players-name @data) :w))
+  (.setText vs-player (get-result  @data))
+  (when (get-result @data) (.setIcon vs-player nil))
+  (inc v))
+(add-watcher data :sendoff data-watcher data-watcher-action)
 
 (def msg-area  (JTextArea. "this is a msg area" 8 15))
 

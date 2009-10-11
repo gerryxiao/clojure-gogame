@@ -51,6 +51,9 @@
 
 (reflect-warn)
 
+(defn reset-data []
+  (swap! data assoc :players {:w nil :b nil} :qipu nil :result nil :comments [] :handicap nil))
+
 (defn get-players-name [the-data]
   (let [players (the-data :players)]
     (if players players {:w "nobody" :b "nobody"})))
