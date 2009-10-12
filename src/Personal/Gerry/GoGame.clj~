@@ -237,16 +237,14 @@
     (merge-inner-groups groups number)
     (dosync
      (alter whole-lists conj s))
-    (test-content "before mark and remove")
+    ;(test-content "before mark and remove")
     (let [groups (if (odd? number) white-id-groups black-id-groups)
 	  back (if (odd? number) b-captured-groups w-captured-groups)]
       (move-dead-stones @groups back)
       (mark-deadstones @groups)
-      ;(println @whole-lists)
-      (println  "simply is " (simply-whole-lists @whole-lists))
       (remove-dead-stones groups)
       (save-snapshot number @whole-lists @black-id-groups @white-id-groups @b-captured-groups @w-captured-groups)
-      (test-content "after remove!" ))))
+      )))
 
 (defn forbidden-point? [aid loc]  ;;check forbidden point which can't be played
     (binding [whole-lists (ref @whole-lists)

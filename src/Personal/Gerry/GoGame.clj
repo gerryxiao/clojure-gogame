@@ -11,7 +11,7 @@
 	   (javax.swing JOptionPane)
 	   (java.awt.geom Line2D$Float Ellipse2D$Float AffineTransform )
 	   (java.util Properties)(java.io File)
-	   (javax.sound.sampled AudioFormat AudioInputStream SourceDataLine DataLine$Info AudioSystem))
+	   (javax.sound.sampled AudioFormat AudioInputStream SourceDataLine DataLine$Info AudioSystem Clip ))
   (:gen-class))
 
 (def *board-size* 19)
@@ -288,10 +288,6 @@
 (defn go [n x y]
   (play-one-stone n {:x x :y y}))
 
-(load "GoBoard1")
-
-(defn -main []
-  (play-go))
 
 (defn play-sound [filename]
   (let [soundfile (File. filename)
@@ -311,12 +307,21 @@
     (.drain sourcedataline)
     (.close sourcedataline)))
 
+(defn play-sound1 [filename]
+  (with-open [audioinputstream (AudioSystem/getAudioInputStream (File. filename))
+		clip (AudioSystem/getClip )]
+    (doto clip 
+      (.open audioinputstream)
+      (.start)
+      (.drain))))
+
 ;;dialog-box
 
 (defn show-warning-box [ parent msg title]
   (JOptionPane/showMessageDialog parent msg title JOptionPane/WARNING_MESSAGE))
-	 
+(load "GoBoard1")
 (load "aux-board")	    
-
+(defn -main []
+  (play-go))
 
 (-main)
