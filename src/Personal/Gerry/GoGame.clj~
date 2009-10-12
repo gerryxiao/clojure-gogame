@@ -10,7 +10,8 @@
 	   (javax.swing JFrame JPanel BorderFactory) (java.awt.event MouseAdapter MouseEvent ActionEvent)
 	   (javax.swing JOptionPane)
 	   (java.awt.geom Line2D$Float Ellipse2D$Float AffineTransform )
-	   (java.util Properties)(java.io File)
+	   (java.util Properties)(java.io File FileInputStream)
+           (sun.audio AudioPlayer AudioStream)
 	   (javax.sound.sampled AudioFormat AudioInputStream SourceDataLine DataLine$Info AudioSystem Clip ))
   (:gen-class))
 
@@ -124,9 +125,9 @@
 	ns (for [s grp] (filter (complement nil?)(vals (get-neighbors s))))
 	part1 (filter stone-in-lists? (flatten ns))
 	part2 (filter (complement stone-in-lists?) (flatten ns))]
-    (println "grp" grp)
-    (println "part1 " part1)
-    (println "ns " (flatten ns))
+    ;(println "grp" grp)
+    ;(println "part1 " part1)
+    ;(println "ns " (flatten ns))
     (- (liberty-of-group group) (- (count part2) (count (set part2))))))
 	
        
@@ -276,9 +277,9 @@
   (let [e (load-data simple-whole-lists)
         sn (:snapshots e)]
     (reset! snapshots sn)
-    (println "snaps is" @snapshots)
-    (println)
-    (println "sn is " sn)
+    ;(println "snaps is" @snapshots)
+    ;(println)
+    ;(println "sn is " sn)
     (get-snapshot (count @snapshots))
     ))
 	    
@@ -307,13 +308,18 @@
     (.drain sourcedataline)
     (.close sourcedataline)))
 
-(defn play-sound1 [filename]
+(defn play-sound2 [filename]
   (with-open [audioinputstream (AudioSystem/getAudioInputStream (File. filename))
 		clip (AudioSystem/getClip )]
     (doto clip 
       (.open audioinputstream)
       (.start)
       (.drain))))
+
+(defn play-sound1 [filename]
+  (let [in (FileInputStream. filename)
+	as (AudioStream. in)]
+    (.start AudioPlayer/player as)))
 
 ;;dialog-box
 

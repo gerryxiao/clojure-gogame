@@ -9,7 +9,7 @@
 	 '(java.awt.image BufferedImage)
 	 '(javax.imageio ImageIO))
 (def screen-size 
-     (let [screensize (.. Toolkit getDefaultToolkit getScreenSize)]
+     (let [#^Dimension screensize (.. Toolkit getDefaultToolkit getScreenSize)]
        {:w (.getWidth screensize) :h (.getHeight screensize)}))
 
 (def max-length (if (> (:h screen-size) (:w screen-size )) (:w screen-size) (:h screen-size))) ;;availble max width and height for board
@@ -24,7 +24,7 @@
 (def pboard-size (Dimension. bs bs))
 (def mboard-size (Dimension. (* 0.9 max-length) (* 0.9 max-length)))
 (def paux-size (Dimension. au-w au-h))
-(def maux-size (Dimension. (* 0.2 (:h screen-size)) (.getHeight mboard-size)))
+(def maux-size (Dimension. (* 0.2 (:h screen-size)) (.getHeight #^Dimension mboard-size)))
 
 (declare set-comment)	 
 (def main-window (proxy [JFrame ActionListener] [ "Clojure 围棋游戏 作者：gerryxiao@gmail.com"]
@@ -91,16 +91,10 @@
 (defn get-y [stone u]
   (- (:y (get-stone-cord stone u)) (/ u 2.0)))
 
-(defn loadImage [url]
-  (let [#^Image image  (.getImage  (Toolkit/getDefaultToolkit) url)
-	mediaTracker (MediaTracker. (Container.))]
-    (.addImage mediaTracker image 0)
-    (.waitForID mediaTracker 0)
-     image))
 
 (def draw-coords? true)
 
-(def board (proxy [JPanel] []
+(def  board  (proxy [JPanel] []
   (paintComponent [g]
      (proxy-super paintComponent #^Graphics2D g)
      (let [g2d #^Graphics2D g
@@ -191,14 +185,14 @@
 					  
 			(go @id x y)
 			(if (even? @id)
-			  (.setIcon w-b-button (ImageIcon. "images/gogui-black-24x24.png"))
-			  (.setIcon w-b-button (ImageIcon. "images/gogui-white-24x24.png")))))))))))))
+			  (.setIcon #^JButton w-b-button (ImageIcon. "images/gogui-black-24x24.png"))
+			  (.setIcon #^JButton w-b-button (ImageIcon. "images/gogui-white-24x24.png")))))))))))))
 						  ;(.repaint #^JPanel board)
 						  
 
 (def lists-watcher (agent 0))
 (defn lists-watcher-action [v r]  ;; v is the state of agent,and r is the ref 
-  (.repaint board)
+  (.repaint #^JPanel board)
   (println "value of agent is" v)
   (inc v))
 (add-watcher whole-lists :send-off lists-watcher lists-watcher-action)
@@ -226,17 +220,17 @@
 (def undo-menuitem (JCheckBoxMenuItem. "Enable undo" false))
 (def coord-menuitem (JCheckBoxMenuItem. "Enable coords" false))
 
-(defmacro mice-listen [target & action]
+(defmacro mice-listen [ target & action]
   `(. ~target addMouseListener (proxy [MouseAdapter] []
 				 (mousePressed [e#]
 					       ~@action ))))
-(defmacro action-listen [target & action]
+(defmacro action-listen [ target & action]
   `(. ~target addActionListener (proxy [ActionListener] [] 
 				  (actionPerformed [e#]
 						   ~@action))))
-(mice-listen new-menuitem (reset-envs) (reset-snaps) (reset-data) (.repaint main-window))
+(mice-listen #^JMenuItem new-menuitem (reset-envs) (reset-snaps) (reset-data) (.repaint #^JFrame main-window))
 
-(mice-listen save-menuitem (let [fc (JFileChooser.)
+(mice-listen #^JMenuItem save-menuitem (let [fc (JFileChooser.)
 				 return (.showSaveDialog fc nil)]
 			     (if (= return JFileChooser/APPROVE_OPTION)
 			       (let [file (.getSelectedFile fc)
@@ -244,7 +238,7 @@
 				 (println (.getPath file))
 				 (save-to-file the-data (str (.toURL file)))))))
 
-(mice-listen open-menuitem (let [fc (JFileChooser.)
+(mice-listen #^JMenuItem open-menuitem (let [fc (JFileChooser.)
 				 return (.showOpenDialog fc nil)]
 			     (if (= return JFileChooser/APPROVE_OPTION)
 			       (let [file (.getSelectedFile fc)
@@ -258,39 +252,39 @@
 				 ;(println "whole-lists is" @whole-lists)
 				 (.repaint #^JFrame main-window)))))
 
-(mice-listen exit-menuitem (System/exit 0))
+(mice-listen #^JMenuItem exit-menuitem (System/exit 0))
 
-(mice-listen paint-menuitem (alter-var-root (var paint-id?) not) (.repaint board))
+(mice-listen #^JMenuItem paint-menuitem (alter-var-root (var paint-id?) not) (.repaint #^JPanel board))
 	     
-(mice-listen audio-menuitem (alter-var-root (var play-audio?) not) (.repaint board))
+(mice-listen #^JMenuItem audio-menuitem (alter-var-root (var play-audio?) not) (.repaint #^JPanel board))
 
-(mice-listen undo-menuitem (alter-var-root (var undo?) not))
+(mice-listen #^JMenuItem undo-menuitem (alter-var-root (var undo?) not))
 
-(mice-listen coord-menuitem (alter-var-root (var draw-coords?) not)(.repaint board))
+(mice-listen #^JMenuItem coord-menuitem (alter-var-root (var draw-coords?) not)(.repaint #^JPanel board))
 
 						 
 
 (defn menu-init []
-  (.add file-menu new-menuitem)
-  (.addSeparator file-menu)
+  (.add #^JMenu file-menu #^JMenuItem new-menuitem)
+  (.addSeparator #^JMenu file-menu)
   (.add #^JMenu file-menu #^JMenuItem open-menuitem)
-  (.addSeparator file-menu)
+  (.addSeparator #^JMenu file-menu)
   (.add #^JMenu file-menu #^JMenuItem save-menuitem)
-  (.addSeparator file-menu)
-  (.add file-menu exit-menuitem)
-  (.add option-menu paint-menuitem)
-  (.addSeparator option-menu)
-  (.add option-menu audio-menuitem)
-  (.addSeparator option-menu)
-  (.add option-menu undo-menuitem)
-  (.add option-menu coord-menuitem)
-  (.add help-menu about-menuitem)
-  (.addSeparator help-menu)
-  (.add help-menu manual-menuitem)
+  (.addSeparator #^JMenu file-menu)
+  (.add #^JMenu file-menu #^JMenuItem exit-menuitem)
+  (.add #^JMenu option-menu #^JMenuItem paint-menuitem)
+  (.addSeparator #^JMenu option-menu)
+  (.add #^JMenu option-menu #^JMenuItem audio-menuitem)
+  (.addSeparator #^JMenu option-menu)
+  (.add #^JMenu option-menu #^JMenuItem undo-menuitem)
+  (.add #^JMenu option-menu #^JMenuItem coord-menuitem)
+  (.add #^JMenu help-menu #^JMenuItem about-menuitem)
+  (.addSeparator #^JMenu help-menu)
+  (.add #^JMenu help-menu #^JMenuItem manual-menuitem)
   (.add #^JMenuBar menu-bar #^JMenu file-menu)
   (.add #^JMenuBar menu-bar #^JMenu option-menu)
-  (.add menu-bar help-menu)
-  (.setBorder menu-bar (BorderFactory/createBevelBorder BevelBorder/LOWERED)))
+  (.add #^JMenuBar menu-bar #^JMenu help-menu)
+  (.setBorder #^JMenuBar menu-bar (BorderFactory/createBevelBorder BevelBorder/LOWERED)))
 
 
 (defn navigate-button [imagename actioncommand tooltiptext alttext]
@@ -317,29 +311,29 @@
     (.addSeparator jt)
     (.add jt button5)
     (.addSeparator jt)
-    (.add jt w-b-button)))
+    (.add jt #^JButton w-b-button)))
 (def w-b-button (JButton. (ImageIcon. "images/clojure2.png")))
  
 (def toolbar (JToolBar. "oops"))
 
 (defn setup-mode [mode]
   (condp = mode
-    "play" (.setVisible toolbar false)
-    "review" (.setVisible toolbar true)
-    "view" (.setVisible toolbar true)
-    "game-over" (.setVisible toolbar true)))
+    "play" (.setVisible #^JToolBar toolbar false)
+    "review" (.setVisible #^JToolBar toolbar true)
+    "view" (.setVisible #^JToolBar toolbar true)
+    "game-over" (.setVisible #^JToolBar toolbar true)))
 
 (declare aux-board)
 
 
 (defn play-go []
-  (.setEnabled toolbar false)
+  (.setEnabled #^JToolBar toolbar false)
   (.setBorder #^JPanel board (BevelBorder. BevelBorder/RAISED))
   (menu-init)
-  (addButtons toolbar)
+  (addButtons #^JToolBar toolbar)
   (setup-mode "review")
   (.setBorderPainted #^JToolBar toolbar true)
-  (.setPreferredSize aux-board paux-size)
+  (.setPreferredSize #^JPanel aux-board paux-size)
   ;(.setPreferredSize board (Dimension. 800 800))
   ;(.setPreferredSize toolbar (Dimension. 600 50))
   (doto #^JFrame main-window
@@ -347,7 +341,7 @@
     
 	  (.add #^JPanel  board BorderLayout/CENTER)
 	  (.add #^JToolBar toolbar BorderLayout/NORTH)
-	  (.add aux-board BorderLayout/EAST)
+	  (.add #^JPanel aux-board BorderLayout/EAST)
     	  (.pack) 
 	  (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
 	  (.setIconImage (.createImage (Toolkit/getDefaultToolkit) "images/clojure-icon.gif"))

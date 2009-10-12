@@ -45,22 +45,46 @@
 (def data-watcher (agent 0))
 (defn data-watcher-action [v r]
  (let [r (get-result @data)]
-  (.setText black-player ((get-players-name @data) :b))
-  (.setText white-player ((get-players-name @data) :w))
-  (.setText vs-player r)
-  (when r (.setIcon vs-player nil)
+   (.setText black-player ((get-players-name @data) :b))
+   (.setText white-player ((get-players-name @data) :w))
+   (.setText vs-player r)
+   (when r (.setIcon vs-player nil)
 	(when (not= (.indexOf (get-result @data) "white") -1) 
 	  (.setIcon white-player (ImageIcon. "smile.gif")))
 	(when (not= (.indexOf (get-result @data) "black") -1) 
 	  (.setIcon black-player (ImageIcon. "smile.gif"))))
-  (when-not r (.setIcon vs-player (ImageIcon. "8.gif"))
+   (when-not r (.setIcon vs-player (ImageIcon. "8.gif"))
 	    (.setIcon white-player (ImageIcon. "w24.png"))
 	    (.setIcon black-player (ImageIcon. "b24.png")))
-  (inc v)))
+   (inc v)))
+
+(defn set-comment []
+  (let [ comment (:comments @data)
+	 comm (first (for [m comment :when (not (nil? (m @id)))] (m @id)))]
+    (if (nil? comm) (.setText msg-area "")
+      (.setText msg-area comm))))
 
 (add-watcher data :sendoff data-watcher data-watcher-action)
 
 (def msg-area  (JTextArea. "this is a msg area" 8 15))
+
+(.addMouseListener msg-area (proxy [MouseAdapter] []
+  (mousePressed [#^MouseEvent e]
+    (when (.isControlDown e)
+      (.setText msg-area "") 
+      (.setEditable msg-area true)
+      (.setBackground msg-area Color/gray)))))
+
+ 
+(.addMouseListener msg-area (proxy [MouseAdapter] []
+  (mousePressed [#^MouseEvent e]
+    (when (.isShiftDown e) 
+      (let [text (.getText msg-area)
+	    len (count text)
+	    text-map {@id text}
+	    comm (conj (:comments @data) text-map)]
+	(.setBackground msg-area Color/white)
+	(swap! data assoc :comments comm))))))
 
 (def dialog-field  (JTextField."Hello World" 30))
 (action-listen dialog-field (let [content (.getText dialog-field)]
