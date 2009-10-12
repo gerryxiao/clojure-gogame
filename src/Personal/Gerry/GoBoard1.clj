@@ -13,14 +13,20 @@
        {:w (.getWidth screensize) :h (.getHeight screensize)}))
 
 (def max-length (if (> (:h screen-size) (:w screen-size )) (:w screen-size) (:h screen-size))) ;;availble max width and height for board
+(def bs (* 0.8 max-length))
+(def fs-w (* 1.18 bs))
+(def fs-h (+ bs 30))
+(def au-w (* 0.2 max-length))
+(def au-h bs)
 
-(def pframe-size (Dimension. 620 580))  ;preferred size
+(def pframe-size (Dimension. fs-w fs-h))  ;preferred size
 (def mframe-size (Dimension. (* 1.15 (* 1.0 max-length)) (* 1.0 max-length))) ;;max size
-(def pboard-size (Dimension. 500 500))
+(def pboard-size (Dimension. bs bs))
 (def mboard-size (Dimension. (* 0.9 max-length) (* 0.9 max-length)))
-(def paux-size (Dimension. 120 500))
+(def paux-size (Dimension. au-w au-h))
 (def maux-size (Dimension. (* 0.2 (:h screen-size)) (.getHeight mboard-size)))
-	 
+
+(declare set-comment)	 
 (def main-window (proxy [JFrame ActionListener] [ "Clojure 围棋游戏 作者：gerryxiao@gmail.com"]
    (actionPerformed [#^ActionEvent e]
      (when (and (not (empty? @whole-lists)) (.equals (.getActionCommand e) "previous"))
@@ -29,11 +35,13 @@
 	       (.repaint #^JFrame this))
 	 (do (get-snapshot (dec @id)) 
 	     (println "id is " @id)
+	     (set-comment)
 	     (println "count is" (count @snapshots))
 	     (.repaint #^JFrame this))))
 				     				     		      
      (when (and (.equals (.getActionCommand e) "next") (> (count @snapshots) @id))
        (get-snapshot (inc @id))
+       (set-comment)
        (.repaint #^JFrame this))
 				      
      (when (.equals (.getActionCommand e) "last")
@@ -144,7 +152,7 @@
 					;(.fill g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
 	   (when paint-id?
 	     (.setColor g2d Color/red)
-	     (.setFont g2d (Font. "Times" Font/PLAIN 10))
+	     (.setFont g2d (Font. "Times" Font/PLAIN 6))
 	     (.drawString g2d (str (:id stone)) (float (-  (:x (get-stone-cord stone u)) (* u 0.1)))
 			  (float (-  (:y (get-stone-cord stone u)) (* u 0.03)))))))
 			
@@ -158,7 +166,7 @@
 		   mboard-size)))
 
 		       
-(declare w-b-button setup-mode)		      
+(declare w-b-button setup-mode msg-area)		      
 
 (.addMouseListener #^JPanel board 
     (proxy [MouseAdapter] []
@@ -175,7 +183,6 @@
 					    
 	    (when (not (nil? XY))
 	      (let [x (Math/round (float (:x XY))) y (Math/round (float (:y XY)))]
-											    					    
 		(if (stone-in-lists? {:x x :y y}) (println "sorry you canot play there")
 		    (when-not (forbidden-point? (inc @id) {:x x :y y}) ;; check probidden point
 		      (do 
@@ -198,7 +205,7 @@
 
 (def capture-watcher (agent 0))
 (defn capture-watcher-action [v r]
-     (if play-audio? (play-sound1 "hit.wav")
+     (if play-audio? (play-sound1 "stone.wav")
 	 (inc v)))
 (add-watcher w-captured-groups :send-off capture-watcher capture-watcher-action)
 (add-watcher b-captured-groups :send-off capture-watcher capture-watcher-action)
@@ -235,7 +242,7 @@
 			       (let [file (.getSelectedFile fc)
 				     the-data (assoc @data :qipu ( simply-whole-lists @whole-lists))]
 				 (println (.getPath file))
-				 (save-to-file the-data (str "file://" (.getPath file)))))))
+				 (save-to-file the-data (str (.toURL file)))))))
 
 (mice-listen open-menuitem (let [fc (JFileChooser.)
 				 return (.showOpenDialog fc nil)]
@@ -248,7 +255,7 @@
 					;(compare-and-set! snapshots @snapshots data)
 					;(get-snapshot (count data))
 				 (load-data1 qipu)
-				 (println "whole-lists is" @whole-lists)
+				 ;(println "whole-lists is" @whole-lists)
 				 (.repaint #^JFrame main-window)))))
 
 (mice-listen exit-menuitem (System/exit 0))
@@ -261,39 +268,6 @@
 
 (mice-listen coord-menuitem (alter-var-root (var draw-coords?) not)(.repaint board))
 
-(comment   ;;begin comment
-(.addMouseListener new-menuitem (proxy [MouseAdapter] []
-   (mousePressed [e]
-		 (reset-envs)
-		 (reset-snaps)
-		 (.repaint main-window))))
-
-(.addMouseListener #^JMenuItem save-menuitem (proxy [MouseAdapter][]
-   (mousePressed [e]
-		 (let [fc (JFileChooser.)
-		       return (.showSaveDialog fc nil)]
-		   (if (= return JFileChooser/APPROVE_OPTION)
-		     (let [file (.getSelectedFile fc)]
-		       (println (.getPath file))
-		       (save-to-file @snapshots (str "file://" (.getPath file)))))))))
-
-(.addMouseListener #^JMenuItem open-menuitem (proxy [MouseAdapter][]
-  (mousePressed [e]
-		(let [fc (JFileChooser.)
-		      return (.showOpenDialog fc nil)]
-		  (if (= return JFileChooser/APPROVE_OPTION)
-		    (let [file (.getSelectedFile fc)
-			  data (load-data-from-file (.getPath file))]
-		      (println (.getName file))
-		      (compare-and-set! snapshots @snapshots data)
-		      (get-snapshot (count data))
-		      (.repaint #^JFrame main-window)))))))
-
-(.addMouseListener exit-menuitem (proxy [MouseAdapter] []
-   (mousePressed [e]
-      (System/exit 0)))))  ;;end comment
-
-						   
 						 
 
 (defn menu-init []

@@ -44,11 +44,20 @@
 	)))))
 (def data-watcher (agent 0))
 (defn data-watcher-action [v r]
+ (let [r (get-result @data)]
   (.setText black-player ((get-players-name @data) :b))
   (.setText white-player ((get-players-name @data) :w))
-  (.setText vs-player (get-result  @data))
-  (when (get-result @data) (.setIcon vs-player nil))
-  (inc v))
+  (.setText vs-player r)
+  (when r (.setIcon vs-player nil)
+	(when (not= (.indexOf (get-result @data) "white") -1) 
+	  (.setIcon white-player (ImageIcon. "smile.gif")))
+	(when (not= (.indexOf (get-result @data) "black") -1) 
+	  (.setIcon black-player (ImageIcon. "smile.gif"))))
+  (when-not r (.setIcon vs-player (ImageIcon. "8.gif"))
+	    (.setIcon white-player (ImageIcon. "w24.png"))
+	    (.setIcon black-player (ImageIcon. "b24.png")))
+  (inc v)))
+
 (add-watcher data :sendoff data-watcher data-watcher-action)
 
 (def msg-area  (JTextArea. "this is a msg area" 8 15))

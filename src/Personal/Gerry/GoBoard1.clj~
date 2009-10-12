@@ -180,7 +180,7 @@
 		    (when-not (forbidden-point? (inc @id) {:x x :y y}) ;; check probidden point
 		      (do 
 			(swap! id inc)
-			(when play-audio? (.start (Thread. #(play-sound "stone.wav"))))
+			(when play-audio? (.start (Thread. #(play-sound1 "stone.wav"))))
 					  
 			(go @id x y)
 			(if (even? @id)
@@ -198,7 +198,7 @@
 
 (def capture-watcher (agent 0))
 (defn capture-watcher-action [v r]
-     (if play-audio? (play-sound "hit.wav")
+     (if play-audio? (play-sound1 "hit.wav")
 	 (inc v)))
 (add-watcher w-captured-groups :send-off capture-watcher capture-watcher-action)
 (add-watcher b-captured-groups :send-off capture-watcher capture-watcher-action)
