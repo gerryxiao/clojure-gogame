@@ -290,12 +290,12 @@
   (play-one-stone n {:x x :y y}))
 
 
-(defn play-sound [filename]
+(defn play-sound [#^String filename]
   (let [soundfile (File. filename)
 	audioinputstream (AudioSystem/getAudioInputStream soundfile)
 	audioformat (.getFormat audioinputstream)
 	datalineinfo (DataLine$Info.  SourceDataLine audioformat)
-	sourcedataline #^SourceDataLine (AudioSystem/getLine datalineinfo)
+	#^SourceDataLine sourcedataline #^SourceDataLine (AudioSystem/getLine datalineinfo)
 	tempbuffer (make-array (. Byte TYPE) 1000)]
     (.open sourcedataline audioformat)
     (.start sourcedataline)
@@ -308,7 +308,7 @@
     (.drain sourcedataline)
     (.close sourcedataline)))
 
-(defn play-sound2 [filename]
+(defn play-sound2 [#^String filename]
   (with-open [audioinputstream (AudioSystem/getAudioInputStream (File. filename))
 		clip (AudioSystem/getClip )]
     (doto clip 
@@ -316,7 +316,7 @@
       (.start)
       (.drain))))
 
-(defn play-sound1 [filename]
+(defn play-sound1 [#^String filename]
   (let [in (FileInputStream. filename)
 	as (AudioStream. in)]
     (.start AudioPlayer/player as)))
