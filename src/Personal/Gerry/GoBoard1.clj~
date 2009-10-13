@@ -5,7 +5,7 @@
 	 '(java.net URL) '(javax.swing JMenuBar JMenu JMenuItem JCheckBoxMenuItem 
 				       JToolBar JToolBar$Separator JButton ImageIcon JFileChooser)
 	 '(java.awt.event KeyEvent ActionListener)
-	 '(javax.swing JCheckBoxMenuItem)
+	 '(javax.swing JCheckBoxMenuItem JTextArea)
 	 '(java.awt.image BufferedImage)
 	 '(javax.imageio ImageIO))
 (def screen-size 
@@ -14,7 +14,7 @@
 
 (def max-length (if (> (:h screen-size) (:w screen-size )) (:w screen-size) (:h screen-size))) ;;availble max width and height for board
 (def bs (* 0.8 max-length))
-(def fs-w (* 1.18 bs))
+(def fs-w (* 1.186 bs))
 (def fs-h (+ bs 30))
 (def au-w (* 0.2 max-length))
 (def au-h bs)
@@ -26,26 +26,25 @@
 (def paux-size (Dimension. au-w au-h))
 (def maux-size (Dimension. (* 0.2 (:h screen-size)) (.getHeight #^Dimension mboard-size)))
 
-(declare set-comment)	 
+(declare msg-area)
 (def main-window (proxy [JFrame ActionListener] [ "Clojure 围棋游戏 作者：gerryxiao@gmail.com"]
    (actionPerformed [#^ActionEvent e]
      (when (and (not (empty? @whole-lists)) (.equals (.getActionCommand e) "previous"))
        (condp = @id
 	 1 (do (reset-envs)
 	       (.repaint #^JFrame this))
-	 (do (get-snapshot (dec @id)) 
-	     (println "id is " @id)
-	     (set-comment)
-	     (println "count is" (count @snapshots))
-	     (.repaint #^JFrame this))))
+	 (do (get-snapshot (dec @id))
+	   (when-let [comm (get-from-comments (dec @id))] (.setText #^JTextArea msg-area comm))
+	   (.repaint #^JFrame this))))
 				     				     		      
      (when (and (.equals (.getActionCommand e) "next") (> (count @snapshots) @id))
        (get-snapshot (inc @id))
-       (set-comment)
+       (when-let [comm (get-from-comments (inc @id))] (.setText #^JTextArea msg-area comm))
        (.repaint #^JFrame this))
 				      
      (when (.equals (.getActionCommand e) "last")
        (get-snapshot (count @snapshots))
+       (when-let [comm (get-from-comments (count @snapshots))] (.setText #^JTextArea msg-area comm))
        (.repaint #^JFrame this))
 				      
      (when (.equals (.getActionCommand e) "first")
@@ -94,8 +93,8 @@
 
 (def draw-coords? true)
 
-(def  board  (proxy [JPanel] []
-  (paintComponent [g]
+(def #^JPanel board  (proxy [JPanel] []
+  (paintComponent [#^Graphics2D g]
      (proxy-super paintComponent #^Graphics2D g)
      (let [g2d #^Graphics2D g
 	   w (.getWidth #^JPanel this)
@@ -184,6 +183,9 @@
 			(when play-audio? (.start (Thread. #(play-sound1 "stone.wav"))))
 					  
 			(go @id x y)
+			(let [comm (.getText #^JTextArea  msg-area)
+			      len (count comm)]
+			  (if (> len 1) (add-to-comments @id comm)))
 			(if (even? @id)
 			  (.setIcon #^JButton w-b-button (ImageIcon. "images/gogui-black-24x24.png"))
 			  (.setIcon #^JButton w-b-button (ImageIcon. "images/gogui-white-24x24.png")))))))))))))
@@ -193,7 +195,6 @@
 (def lists-watcher (agent 0))
 (defn lists-watcher-action [v r]  ;; v is the state of agent,and r is the ref 
   (.repaint #^JPanel board)
-  (println "value of agent is" v)
   (inc v))
 (add-watcher whole-lists :send-off lists-watcher lists-watcher-action)
 
@@ -228,23 +229,26 @@
   `(. ~target addActionListener (proxy [ActionListener] [] 
 				  (actionPerformed [e#]
 						   ~@action))))
-(mice-listen #^JMenuItem new-menuitem (reset-envs) (reset-snaps) (reset-data) (.repaint #^JFrame main-window))
+(mice-listen #^JMenuItem new-menuitem (reset-envs) (reset-snaps) (reset-data) 
+  (.setText #^JTextArea msg-area "") (swap! game-comments empty) (.repaint #^JFrame main-window))
 
 (mice-listen #^JMenuItem save-menuitem (let [fc (JFileChooser.)
 				 return (.showSaveDialog fc nil)]
 			     (if (= return JFileChooser/APPROVE_OPTION)
 			       (let [file (.getSelectedFile fc)
-				     the-data (assoc @data :qipu ( simply-whole-lists @whole-lists))]
+				     the-data (assoc @data :qipu ( simply-whole-lists @whole-lists))
+				     the-data1 (assoc the-data :comments @game-comments)]
 				 (println (.getPath file))
-				 (save-to-file the-data (str (.toURL file)))))))
+				 (save-to-file the-data1 (str (.toURL file)))))))
 
 (mice-listen #^JMenuItem open-menuitem (let [fc (JFileChooser.)
 				 return (.showOpenDialog fc nil)]
 			     (if (= return JFileChooser/APPROVE_OPTION)
 			       (let [file (.getSelectedFile fc)
 				     data1 (load-data-from-file (.getPath file))
-				     qipu (:qipu data1)]
+				     qipu (:qipu data1) comm (:comments data1)]
 				 (reset! data data1)
+				 (reset! game-comments comm)
 				 (println (.getName file))
 					;(compare-and-set! snapshots @snapshots data)
 					;(get-snapshot (count data))

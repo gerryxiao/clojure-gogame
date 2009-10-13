@@ -27,6 +27,7 @@
 (def maux-size (Dimension. (* 0.2 (:h screen-size)) (.getHeight #^Dimension mboard-size)))
 
 (declare msg-area)
+
 (def main-window (proxy [JFrame ActionListener] [ "Clojure 围棋游戏 作者：gerryxiao@gmail.com"]
    (actionPerformed [#^ActionEvent e]
      (when (and (not (empty? @whole-lists)) (.equals (.getActionCommand e) "previous"))
@@ -72,9 +73,13 @@
 
 (defn nearby [a b]
   (and (> a (* 0.95 b)) (< a (* 1.05 b))))
+(defn nearby1 [a b u]
+  (let [distance (Math/abs (float (- a b)))]
+    (< distance (* u 0.3))))
+
   
-(defn set-xy [x y coords]  ; get x y from real coords 
-  (for  [p coords :when (and (nearby x (:x p)) (nearby y (:y p)))]  
+(defn set-xy [x y coords u]  ; get x y from real coords 
+  (for  [p coords :when (and (nearby1 x (:x p) u) (nearby1 y (:y p) u))]  
       {:x (:x p) :y (:y p)}))
 
 (defn trans-coord [x y u] ;;from real coords to 
@@ -101,23 +106,26 @@
 	   u (/ w 20.0)
 	   extent (range u (* u 20) u)
 	   coords (for [x extent y extent] {:x x :y y})
-	   last-stone (last @whole-lists)]
-       (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
-       (.draw3DRect g2d 0 0 w w true)
-       (.setColor g2d (Color. 212 167 102))
-       (.fill3DRect g2d 0 0 w w true)
-       (.setColor g2d Color/BLACK)
-       (.setStroke g2d (BasicStroke. (float 1)))
-       (.setFont g2d (Font. "Times" Font/BOLD 8))
+	   last-stone (last @whole-lists)
+	   bimg (ImageIO/read (File. (str "images" file-separator "black.gif")))
+	   wimg (ImageIO/read (File. (str "images" file-separator "white.gif")))]
+       (doto g2d
+	 (.setRenderingHint  RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
+	 (.draw3DRect  0 0 w w true)
+	 (.setColor  (Color. 212 167 102))
+	 (.fill3DRect  0 0 w w true)
+	 (.setColor  Color/BLACK)
+	 (.setStroke  (BasicStroke. (float 1)))
+	 (.setFont  (Font. "Sans" Font/BOLD 10)))
        (doall
 	(map #(.draw g2d (new Line2D$Float u % (* 19 u) %)) extent))
        (doall
 	(map #(.draw g2d (new Line2D$Float % u % (* 19 u))) extent))
        (when draw-coords? 
 	 (doall
-	  (map #(.drawString g2d (str (char (+ 96 (Math/round (float (/ % u)))))) (float (* 0.5 u)) (float %)) extent))
+	  (map #(.drawString g2d (str (char (+ 96 (Math/round (float (/ % u)))))) (float (* 0.48 u)) (float %)) extent))
 	 (doall 
-	  (map #(.drawString #^Graphics2D g2d (str (Math/round (float (/ %  u)))) (float %)(float (* 0.5 u))) extent)))
+	   (map #(.drawString #^Graphics2D g2d (str (Math/round (float (/ %  u)))) (float (- % 2.5))(float (* 0.5 u))) extent)))
        (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 3.9) (* u 0.2) (* u 0.2)))
        (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 15.9) (* u 0.2) (* u 0.2)))
        (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 3.9) (* u 0.2) (* u 0.2))) ;;draw 5 points:xing and tianyuan
@@ -127,32 +135,26 @@
        (doseq [stone @whole-lists]
 	 (when (and (not-empty stone) (= (:liberty stone) nil))
 			  
-			  ; (let [bimg (loadImage (str "images" file-separator "black.gif"))  ;;change old loadImage to new ImageIO
-			  ;wimg (loadImage (str "images" file-separator "white.gif"))]
-	   (let [bimg (ImageIO/read (File. (str "images" file-separator "black.gif")))
-		 wimg (ImageIO/read (File. (str "images" file-separator "white.gif")))]	
-			   
-	     (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
-			  
-			  
-			  
-	     (if (odd? (:id stone))
-					; (.drawImage g2d bimg at this)
-					; (.drawImage g2d wimg at this)))
-			     
-	       (.drawImage g2d bimg (get-x stone u) (get-y stone u) u u this)
-	       (.drawImage g2d wimg (get-x stone u) (get-y stone u) u u this)))
-					;(.fill g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
+	   (if (odd? (:id stone))
+	     (.drawImage g2d bimg (get-x stone u) (get-y stone u) u u this)
+	     (.drawImage g2d wimg (get-x stone u) (get-y stone u) u u this))
+					
 	   (when paint-id?
-	     (.setColor g2d Color/red)
-	     (.setFont g2d (Font. "Times" Font/PLAIN 6))
-	     (.drawString g2d (str (:id stone)) (float (-  (:x (get-stone-cord stone u)) (* u 0.1)))
-			  (float (-  (:y (get-stone-cord stone u)) (* u 0.03)))))))
+	     (.setColor g2d (if (odd? (:id stone)) Color/white Color/black))
+	     (.setFont g2d (Font. "Sans" Font/BOLD (Math/round (/ u 3.0))))
+	     (let [x (:x (get-stone-cord stone u)) x1 (float (- x (* u 0.1))) 
+		   x2 (float (- x (* u 0.2))) x3 (float (- x (* u 0.35)))
+		   xx (cond 
+			(< (:id stone) 10) x1
+			(< (:id stone) 100) x2
+			(< (:id stone) 1000) x3)]
+	       (.drawString g2d (str (:id stone)) xx
+		 (float (-  (:y (get-stone-cord stone u)) (* u 0.03))))))))
 			
        (when (and (not (nil? last-stone)) (not paint-id?))
 	 (if (odd? (:id last-stone)) (.setColor g2d Color/white) (.setColor g2d Color/black))
 	 (.draw g2d (Ellipse2D$Float. (+ (get-x last-stone  u)(/ u 4.0))
-						   (+ (get-y last-stone  u)(/ u 4.0)) (/ u 2.0) (/ u 2.0))))))
+		      (+ (get-y last-stone  u)(/ u 4.0)) (/ u 2.0) (/ u 2.0))))))
   (getPreferredSize []
 		    pboard-size)
   (getMaximumSize  []
@@ -171,7 +173,7 @@
 		u (/ w  20.0)
 		extent (range u (* u 20.0) u)
 		coords (for [a extent b extent] {:x a :y b})
-		xy  (set-xy x y coords)
+		xy  (set-xy x y coords u)
 		XY (if (empty? xy) nil (trans-coord (:x (first xy)) (:y (first xy)) u))]
 					    
 	    (when (not (nil? XY))
@@ -332,7 +334,7 @@
 
 (defn play-go []
   (.setEnabled #^JToolBar toolbar false)
-  (.setBorder #^JPanel board (BevelBorder. BevelBorder/RAISED))
+  ;(.setBorder #^JPanel board (BevelBorder. BevelBorder/RAISED))
   (menu-init)
   (addButtons #^JToolBar toolbar)
   (setup-mode "review")

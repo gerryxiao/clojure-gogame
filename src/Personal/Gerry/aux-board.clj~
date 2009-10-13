@@ -58,15 +58,14 @@
 	    (.setIcon #^JLabel black-player (ImageIcon. "b24.png")))
    (inc v)))
 
-(defn set-comment []
-  (let [ comment (:comments @data)
-	 comm (first (for [m comment :when (not (nil? (m @id)))] (m @id)))]
-    (if (nil? comm) (.setText #^JTextArea msg-area "")
-      (.setText #^JTextArea msg-area comm))))
+;(defn set-comment []
+ ; (when-let [ comment (@game-comments @id)]
+ ;   (if (nil? comm) (.setText #^JTextArea msg-area "")
+ ;     (.setText #^JTextArea msg-area comm))))
 
 (add-watcher data :sendoff data-watcher data-watcher-action)
 
-(def msg-area  (JTextArea. "this is a msg area" 8 15))
+(def msg-area  (JTextArea. "" 8 15))
 
 (.addMouseListener #^JTextArea msg-area (proxy [MouseAdapter] []
   (mousePressed [#^MouseEvent e]
@@ -80,11 +79,9 @@
   (mousePressed [#^MouseEvent e]
     (when (.isShiftDown e) 
       (let [text (.getText #^JTextArea msg-area)
-	    len (count text)
-	    text-map {@id text}
-	    comm (conj (:comments @data) text-map)]
+	    len (count text)]
 	(.setBackground #^JTextArea msg-area Color/white)
-	(swap! data assoc :comments comm))))))
+	(swap! game-comments assoc @id text))))))
 
 (def dialog-field  (JTextField."Hello World" 30))
 (action-listen #^JTextField dialog-field (let [content (.getText #^JTextField dialog-field)]
