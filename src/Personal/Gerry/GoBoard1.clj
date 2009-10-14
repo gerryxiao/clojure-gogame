@@ -14,7 +14,7 @@
 
 (def max-length (if (> (:h screen-size) (:w screen-size )) (:w screen-size) (:h screen-size))) ;;availble max width and height for board
 (def bs (* 0.8 max-length))
-(def fs-w (* 1.186 bs))
+(def fs-w (* 1.15 bs))
 (def fs-h (+ bs 30))
 (def au-w (* 0.2 max-length))
 (def au-h bs)
@@ -94,7 +94,11 @@
   (- (:x (get-stone-cord stone u)) (/ u 2.0)))
 (defn get-y [stone u]
   (- (:y (get-stone-cord stone u)) (/ u 2.0)))
-
+(defn random-img-name []
+  (let [images ["wood.png" "wood2.jpg" "wood3.jpg"  "Vwood.gif" "wood057.gif"]
+	number (count images)]
+    (nth images (rand-int number))))
+(def backimg-name (random-img-name))
 
 (def draw-coords? true)
 
@@ -107,13 +111,15 @@
 	   extent (range u (* u 20) u)
 	   coords (for [x extent y extent] {:x x :y y})
 	   last-stone (last @whole-lists)
-	   bimg (ImageIO/read (File. (str "images" file-separator "black.gif")))
-	   wimg (ImageIO/read (File. (str "images" file-separator "white.gif")))]
+	   backimg (ImageIO/read (File. (str "images" file-separator backimg-name)))
+	   bimg (ImageIO/read (File. (str "stones" file-separator "black_36.gif")))
+	   wimg (ImageIO/read (File. (str "stones" file-separator "white_36.gif")))]
        (doto g2d
 	 (.setRenderingHint  RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
-	 (.draw3DRect  0 0 w w true)
-	 (.setColor  (Color. 212 167 102))
-	 (.fill3DRect  0 0 w w true)
+	 ;(.draw3DRect  0 0 w w true)
+	 ;(.setColor  (Color. 212 167 102))
+	 ;(.fill3DRect  0 0 w w true)
+	 (.drawImage backimg 0 0 w w nil)
 	 (.setColor  Color/BLACK)
 	 (.setStroke  (BasicStroke. (float 1)))
 	 (.setFont  (Font. "Sans" Font/BOLD 10)))
@@ -131,6 +137,11 @@
        (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 3.9) (* u 0.2) (* u 0.2))) ;;draw 5 points:xing and tianyuan
        (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 15.9) (* u 0.2) (* u 0.2)))
        (.draw g2d (Ellipse2D$Float. (* u 9.9) (* u 9.9) (* u 0.2) (* u 0.2)))
+
+       (.draw g2d (Ellipse2D$Float. (* u 9.9) (* u 3.9) (* u 0.2) (* u 0.2)))
+       (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 9.9) (* u 0.2) (* u 0.2)))
+       (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 9.9) (* u 0.2) (* u 0.2)))
+       (.draw g2d (Ellipse2D$Float. (* u 9.9) (* u 15.9) (* u 0.2) (* u 0.2)))
 		      
        (doseq [stone @whole-lists]
 	 (when (and (not-empty stone) (= (:liberty stone) nil))

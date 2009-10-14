@@ -74,6 +74,13 @@
       (.setEditable #^JTextArea msg-area true)
       (.setBackground #^JTextArea msg-area Color/gray)))))
 
+(.addMouseListener #^JPanel board (proxy [MouseAdapter] []
+  (mousePressed [#^MouseEvent e]
+    (when (.isControlDown e)
+      (def backimg-name (random-img-name))
+      (.repaint board)))))
+
+
  
 (.addMouseListener #^JTextArea msg-area (proxy [MouseAdapter] []
   (mousePressed [#^MouseEvent e]

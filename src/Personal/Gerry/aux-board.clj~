@@ -103,7 +103,7 @@
 
 (doto #^JList lists
   (.setVisibleRowCount 7)
-  (.setBorder (TitledBorder. "Spectators"))
+  (.setBorder (TitledBorder.(BorderFactory/createRaisedBevelBorder) "Spectators"))
   (.setSelectionMode ListSelectionModel/SINGLE_INTERVAL_SELECTION))
   ;(.setLayoutOrientation JList/HORIZONTAL_WRAP))
 
@@ -121,7 +121,7 @@
 
 (doto #^JTextArea msg-area
   (.setWrapStyleWord  true)
-  (.setBorder (TitledBorder. (BorderFactory/createLoweredBevelBorder) "message board"))
+  (.setBorder (TitledBorder. (BorderFactory/createRaisedBevelBorder) "message board"))
   (.setEditable false)
   (.setFont (Font. "Times-Roman" Font/PLAIN 12)))
 

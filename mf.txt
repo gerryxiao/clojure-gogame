@@ -1,0 +1,4 @@
+Main-Class: Personal.Gerry.GoGame
+Class-Path: ./classes
+
+
