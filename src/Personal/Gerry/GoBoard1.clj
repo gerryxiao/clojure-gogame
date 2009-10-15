@@ -95,7 +95,7 @@
 (defn get-y [stone u]
   (- (:y (get-stone-cord stone u)) (/ u 2.0)))
 (defn random-img-name []
-  (let [images ["wood.png" "wood2.jpg" "wood3.jpg"  "Vwood.gif" "wood057.gif"]
+  (let [images ["wood.png" "wood2.jpg" "wood3.jpg"  "Vwood.gif" "wood057.gif" "board.png" "kaya.jpg"]
 	number (count images)]
     (nth images (rand-int number))))
 (def backimg-name (random-img-name))
@@ -112,8 +112,8 @@
 	   coords (for [x extent y extent] {:x x :y y})
 	   last-stone (last @whole-lists)
 	   backimg (ImageIO/read (File. (str "images" file-separator backimg-name)))
-	   bimg (ImageIO/read (File. (str "stones" file-separator "black_36.gif")))
-	   wimg (ImageIO/read (File. (str "stones" file-separator "white_36.gif")))]
+	   bimg (ImageIO/read (File. (str "stones" file-separator "blk.png")))
+	   wimg (ImageIO/read (File. (str "stones" file-separator "hyuga2.png")))]
        (doto g2d
 	 (.setRenderingHint  RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
 	 ;(.draw3DRect  0 0 w w true)
@@ -142,30 +142,29 @@
        (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 9.9) (* u 0.2) (* u 0.2)))
        (.draw g2d (Ellipse2D$Float. (* u 3.9) (* u 9.9) (* u 0.2) (* u 0.2)))
        (.draw g2d (Ellipse2D$Float. (* u 9.9) (* u 15.9) (* u 0.2) (* u 0.2)))
-		      
-       (doseq [stone @whole-lists]
-	 (when (and (not-empty stone) (= (:liberty stone) nil))
-			  
-	   (if (odd? (:id stone))
-	     (.drawImage g2d bimg (get-x stone u) (get-y stone u) u u this)
-	     (.drawImage g2d wimg (get-x stone u) (get-y stone u) u u this))
-					
-	   (when paint-id?
-	     (.setColor g2d (if (odd? (:id stone)) Color/white Color/black))
-	     (.setFont g2d (Font. "Sans" Font/BOLD (Math/round (/ u 3.0))))
-	     (let [x (:x (get-stone-cord stone u)) x1 (float (- x (* u 0.1))) 
-		   x2 (float (- x (* u 0.2))) x3 (float (- x (* u 0.35)))
-		   xx (cond 
-			(< (:id stone) 10) x1
-			(< (:id stone) 100) x2
-			(< (:id stone) 1000) x3)]
-	       (.drawString g2d (str (:id stone)) xx
-		 (float (-  (:y (get-stone-cord stone u)) (* u 0.03))))))))
-			
+
+       (when-let [lists (filter #(= (:liberty %) nil) @whole-lists)]
+	 (let [draw-img-fn (fn [stone] (if (odd? (:id stone))
+					 (.drawImage g2d bimg (get-x stone u) (get-y stone u) u u this)
+					 (.drawImage g2d wimg (get-x stone u) (get-y stone u) u u this)))
+	       draw-id-fn  (fn [stone] 
+			     (.setColor g2d (if (odd? (:id stone)) Color/white Color/black))
+			     (.setFont g2d (Font. "Sans" Font/BOLD (Math/round (/ u 3.0))))
+			     (let [x (:x (get-stone-cord stone u)) x1 (float (- x (* u 0.1))) 
+				    x2 (float (- x (* u 0.2))) x3 (float (- x (* u 0.35)))
+				    xx (cond 
+					 (< (:id stone) 10) x1
+					 (< (:id stone) 100) x2
+					 (< (:id stone) 1000) x3)]
+			       (.drawString g2d (str (:id stone)) xx
+				 (float (-  (:y (get-stone-cord stone u)) (* u 0.03))))))]
+	   (dorun (pmap draw-img-fn lists))
+	   (when paint-id? (dorun (map draw-id-fn lists)))))
+       			
        (when (and (not (nil? last-stone)) (not paint-id?))
 	 (if (odd? (:id last-stone)) (.setColor g2d Color/white) (.setColor g2d Color/black))
-	 (.draw g2d (Ellipse2D$Float. (+ (get-x last-stone  u)(/ u 4.0))
-		      (+ (get-y last-stone  u)(/ u 4.0)) (/ u 2.0) (/ u 2.0))))))
+	 (.draw g2d (Ellipse2D$Float. (+ (get-x last-stone  u)(/ u 4.2))
+		      (+ (get-y last-stone  u)(/ u 4.2)) (/ u 2.0) (/ u 2.0))))))
   (getPreferredSize []
 		    pboard-size)
   (getMaximumSize  []

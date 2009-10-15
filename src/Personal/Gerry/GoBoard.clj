@@ -120,31 +120,19 @@
 		      (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 3.9) (* u 0.2) (* u 0.2)))   ;;draw 5 points:xing and tianyuan
 		      (.draw g2d (Ellipse2D$Float. (* u 15.9) (* u 15.9) (* u 0.2) (* u 0.2)))
 		      (.draw g2d (Ellipse2D$Float. (* u 9.9) (* u 9.9) (* u 0.2) (* u 0.2)))
+		      (when-let [lists (filter #(= (:liberty %) nil) @whole-lists) ]
+			(let [bimg (ImageIO/read (File. (str "images" file-separator "black.gif")))
+			       wimg (ImageIO/read (File. (str "images" file-separator "white.gif")))
+			       draw-fn (fn [stone](if (odd? (:id stone))
+						    (.drawImage g2d bimg (get-x stone u) (get-y stone u) u u this)
+						    (.drawImage g2d wimg (get-x stone u) (get-y stone u) u u this)))]
+			(doall (pmap draw-fn lists))))
+						      
+						      
+					 
+				  
 		      
-		      (doseq [stone @whole-lists]
-			(when (and (not-empty stone) (= (:liberty stone) nil))
-			  
-			 ; (let [bimg (loadImage (str "images" file-separator "black.gif"))  ;;change old loadImage to new ImageIO
-				;wimg (loadImage (str "images" file-separator "white.gif"))]
-			  (let [bimg (ImageIO/read (File. (str "images" file-separator "black.gif")))
-				wimg (ImageIO/read (File. (str "images" file-separator "white.gif")))]	
-			   
-			    (.setRenderingHint g2d RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
-			  
-			  
-			  
-			    (if (odd? (:id stone))
-			     ; (.drawImage g2d bimg at this)
-			     ; (.drawImage g2d wimg at this)))
-			     
-			      (.drawImage g2d bimg (get-x stone u) (get-y stone u) u u this)
-			      (.drawImage g2d wimg (get-x stone u) (get-y stone u) u u this)))
-			  ;(.fill g2d (Ellipse2D$Float. (get-x stone u) (get-y stone u) u u))
-			  (when paint-id?
-			    (.setColor g2d Color/red)
-			    (.setFont g2d (Font. "Times" Font/PLAIN 10))
-			    (.drawString g2d (str (:id stone)) (float (-  (:x (get-stone-cord stone u)) (* u 0.1)))
-					 (float (-  (:y (get-stone-cord stone u)) (* u 0.03)))))))
+		      
 			
 		      (when (and (not (nil? last-stone)) (not paint-id?))
 			(if (odd? (:id last-stone)) (.setColor g2d Color/white) (.setColor g2d Color/black))
@@ -155,7 +143,7 @@
 	     (getMaximumSize  []
 			      mboard-size)))
 
-		       
+(defn random-img-name [])
 (declare w-b-button setup-mode)		      
 
 (.addMouseListener #^JPanel board (proxy [MouseAdapter] []

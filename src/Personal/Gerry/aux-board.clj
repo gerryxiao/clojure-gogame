@@ -91,6 +91,9 @@
 	(swap! game-comments assoc @id text))))))
 
 (def dialog-field  (JTextField."Hello World" 30))
+(.setMargin #^JTextField dialog-field (Insets. 2 2 2 2))
+(.setBorder #^JTextField dialog-field (BorderFactory/createLineBorder Color/blue 1 ))
+
 (action-listen #^JTextField dialog-field (let [content (.getText #^JTextField dialog-field)]
 			   (.setText #^JTextField dialog-field "")
 			   (.append #^JTextArea msg-area (str  content "\n"))
@@ -99,23 +102,23 @@
 
 
 (def lists-data (Vector.))
-(doto #^Vector lists-data
-  (.add "Gerry")
-  (.add "Rose")
-  (.add "John")
-  (.add "Rich"))
+;(doto #^Vector lists-data
+;  (.add "Gerry")
+;  (.add "Rose")
+;  (.add "John")
+;  (.add "Rich"))
 
 (def lists (JList. #^Vector lists-data))
 
 
 (doto #^JList lists
   (.setVisibleRowCount 7)
-  (.setBorder (TitledBorder.(BorderFactory/createRaisedBevelBorder) "Spectators"))
+  (.setBorder (TitledBorder.(BorderFactory/createLineBorder Color/blue 1 ) "Spectators"))
   (.setSelectionMode ListSelectionModel/SINGLE_INTERVAL_SELECTION))
   ;(.setLayoutOrientation JList/HORIZONTAL_WRAP))
 
 (doto #^JPanel aux-board2
-  (.setBorder (TitledBorder. (BorderFactory/createRaisedBevelBorder) "Match"))
+  (.setBorder (TitledBorder. (BorderFactory/createLineBorder Color/blue 1 ) "Match"))
   (.setLayout (GridLayout. 3 1 ))
   (.add #^JLabel white-player )
   (.add #^JLabel vs-player)
@@ -128,7 +131,7 @@
 
 (doto #^JTextArea msg-area
   (.setWrapStyleWord  true)
-  (.setBorder (TitledBorder. (BorderFactory/createRaisedBevelBorder) "message board"))
+  (.setBorder (TitledBorder. (BorderFactory/createLineBorder Color/blue 1 ) "message board"))
   (.setEditable false)
   (.setFont (Font. "Times-Roman" Font/PLAIN 12)))
 

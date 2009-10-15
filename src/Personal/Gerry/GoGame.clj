@@ -5,7 +5,7 @@
 (ns Personal.Gerry.GoGame 
   (:use [clojure.contrib seq-utils duck-streams])
   (:require [clojure.zip :as zip])
-  (:import (java.awt Color Graphics Font Graphics2D BasicStroke Image Canvas Dimension RenderingHints BorderLayout)
+  (:import (java.awt Color Graphics Insets Font Graphics2D BasicStroke Image Canvas Dimension RenderingHints BorderLayout)
 	   (javax.swing.border BevelBorder)
 	   (javax.swing JFrame JPanel BorderFactory) (java.awt.event MouseAdapter MouseEvent ActionEvent)
 	   (javax.swing JOptionPane)

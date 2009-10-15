@@ -27,7 +27,8 @@
 
 (defstruct stone :id :loc :liberty)  ;loc is {:x,:y} liberty default to nil, if 0,then it's captured.死子气为0
 
-(def data (atom {:players {:w nil :b nil} :qipu nil :result nil :comments []  :handicap nil})) ;; data will be saved in disks
+(def data (atom {:players {:w nil :b nil} :qipu nil :result nil :comments {}  :handicap nil})) ;; data will be saved in disks
+(def game-comments (atom {}))
 
 (def go-config (atom {:sound nil :coord nil :mode nil :paint-id nil :undo nil}))  ;;config will be saved to disk
 
@@ -59,8 +60,10 @@
   (let [players (the-data :players)]
     (if players players {:w "nobody" :b "nobody"})))
 
-(defn get-comments [the-data]
+(defn get-comments [the-data]  ;; get comments from data
   (:comment the-data))
+(defn save-comments []         ;; save game-comments to data
+  (swap! data assoc :comments @game-comments))
 
 (defn get-qipu [the-data]
   (:qipu the-data))
@@ -79,9 +82,11 @@
 (defn set-result [theResult]
   (swap! data assoc :result theResult))
 
-(defn add-to-comments [n comm]
-  (let [content (get-comments data)]
-    (swap! data assoc :comment (conj content {:id n :comment comm}))))
+(defn add-to-comments [n comm]   ;; add comments to game-comments
+  (swap! game-comments assoc n comm))
+
+(defn get-from-comments [n]     ;; get coments from game-comments for the nth step
+  (@game-comments n))
 
 (defn getloc-from-id [id]
   (get-in @whole-lists [(dec id) :loc]))

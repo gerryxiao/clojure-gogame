@@ -74,6 +74,13 @@
       (.setEditable #^JTextArea msg-area true)
       (.setBackground #^JTextArea msg-area Color/gray)))))
 
+(.addMouseListener #^JPanel board (proxy [MouseAdapter] []
+  (mousePressed [#^MouseEvent e]
+    (when (.isControlDown e)
+      (def backimg-name (random-img-name))
+      (.repaint board)))))
+
+
  
 (.addMouseListener #^JTextArea msg-area (proxy [MouseAdapter] []
   (mousePressed [#^MouseEvent e]
@@ -84,6 +91,7 @@
 	(swap! game-comments assoc @id text))))))
 
 (def dialog-field  (JTextField."Hello World" 30))
+(.setMargin #^JTextField dialog-field (Insets. 2 2 2 2))
 (action-listen #^JTextField dialog-field (let [content (.getText #^JTextField dialog-field)]
 			   (.setText #^JTextField dialog-field "")
 			   (.append #^JTextArea msg-area (str  content "\n"))
@@ -92,11 +100,11 @@
 
 
 (def lists-data (Vector.))
-(doto #^Vector lists-data
-  (.add "Gerry")
-  (.add "Rose")
-  (.add "John")
-  (.add "Rich"))
+;(doto #^Vector lists-data
+;  (.add "Gerry")
+;  (.add "Rose")
+;  (.add "John")
+;  (.add "Rich"))
 
 (def lists (JList. #^Vector lists-data))
 
