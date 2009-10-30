@@ -77,7 +77,7 @@
 (.addMouseListener #^JPanel board (proxy [MouseAdapter] []
   (mousePressed [#^MouseEvent e]
     (when (.isControlDown e)
-      (def backimg-name (random-img-name))
+      (reset! backimg-name (random-img-name))
       (.repaint board)))))
 
 

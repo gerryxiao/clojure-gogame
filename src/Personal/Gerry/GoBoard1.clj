@@ -98,7 +98,7 @@
   (let [images ["wood.png" "wood2.jpg" "wood3.jpg"  "Vwood.gif" "wood057.gif" "board.png" "kaya.jpg"]
 	number (count images)]
     (nth images (rand-int number))))
-(def backimg-name (random-img-name))
+(def backimg-name (atom (random-img-name)))
 
 (def draw-coords? true)
 
@@ -111,7 +111,7 @@
 	   extent (range u (* u 20) u)
 	   coords (for [x extent y extent] {:x x :y y})
 	   last-stone (last @whole-lists)
-	   backimg (ImageIO/read (File. (str "images" file-separator backimg-name)))
+	   backimg (ImageIO/read (File. (str "images" file-separator @backimg-name)))
 	   bimg (ImageIO/read (File. (str "stones" file-separator "blk.png")))
 	   wimg (ImageIO/read (File. (str "stones" file-separator "hyuga2.png")))]
        (doto g2d

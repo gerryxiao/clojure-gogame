@@ -95,7 +95,7 @@
 (defn get-y [stone u]
   (- (:y (get-stone-cord stone u)) (/ u 2.0)))
 (defn random-img-name []
-  (let [images ["wood.png" "wood2.jpg" "wood3.jpg"  "Vwood.gif" "wood057.gif"]
+  (let [images ["wood.png" "wood2.jpg" "wood3.jpg"  "Vwood.gif" "wood057.gif" "board.png" "kaya.jpg"]
 	number (count images)]
     (nth images (rand-int number))))
 (def backimg-name (random-img-name))
@@ -112,8 +112,8 @@
 	   coords (for [x extent y extent] {:x x :y y})
 	   last-stone (last @whole-lists)
 	   backimg (ImageIO/read (File. (str "images" file-separator backimg-name)))
-	   bimg (ImageIO/read (File. (str "stones" file-separator "black_50.gif")))
-	   wimg (ImageIO/read (File. (str "stones" file-separator "white_50.gif")))]
+	   bimg (ImageIO/read (File. (str "stones" file-separator "blk.png")))
+	   wimg (ImageIO/read (File. (str "stones" file-separator "hyuga2.png")))]
        (doto g2d
 	 (.setRenderingHint  RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
 	 ;(.draw3DRect  0 0 w w true)
