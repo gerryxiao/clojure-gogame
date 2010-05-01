@@ -47,11 +47,11 @@
 (defn simply-whole-lists [lists]   ;;simply whole-lists in order to save smaller data
   (for [s lists] (vals (get-in s [:loc]))))
 
-(defn reflect-warn [ ]   ;debug mode setup
-  (if *debug* (set! *warn-on-reflection* true) 
-      (set! *warn-on-reflection* false)))
+;(defn reflect-warn [ ]   ;debug mode setup
+;  (if *debug* (set! *warn-on-reflection* true) 
+;      (set! *warn-on-reflection* false)))
 
-(reflect-warn)
+;(reflect-warn)
 
 (defn reset-data []
   (swap! data assoc :players {:w nil :b nil} :qipu nil :result nil :comments [] :handicap nil))
@@ -335,4 +335,3 @@
 (defn -main []
   (play-go))
 
-(-main)
