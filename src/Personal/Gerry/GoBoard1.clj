@@ -208,14 +208,14 @@
 (defn lists-watcher-action [v r]  ;; v is the state of agent,and r is the ref 
   (.repaint #^JPanel board)
   (inc v))
-(add-watcher whole-lists :send-off lists-watcher lists-watcher-action)
+(add-watch whole-lists :key (fn [k r old new] (send lists-watcher lists-watcher-action  new)))
 
 (def capture-watcher (agent 0))
 (defn capture-watcher-action [v r]
      (if play-audio? (play-sound1 "stone.wav")
-	 (inc v)))
-(add-watcher w-captured-groups :send-off capture-watcher capture-watcher-action)
-(add-watcher b-captured-groups :send-off capture-watcher capture-watcher-action)
+       (inc v)))
+(add-watch  w-captured-groups :key1 (fn [k r old new ] (send capture-watcher capture-watcher-action new)))
+(add-watch  b-captured-groups :key2 (fn [k r old new ] (send capture-watcher capture-watcher-action new)))
 
 (def menu-bar (JMenuBar.))
 (def file-menu (JMenu. "File"))

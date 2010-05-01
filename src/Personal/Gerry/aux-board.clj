@@ -63,7 +63,7 @@
  ;   (if (nil? comm) (.setText #^JTextArea msg-area "")
  ;     (.setText #^JTextArea msg-area comm))))
 
-(add-watcher data :sendoff data-watcher data-watcher-action)
+(add-watch  data  :key3 (fn [k r old new ] (send  data-watcher data-watcher-action new)))
 
 (def msg-area  (JTextArea. "" 8 15))
 

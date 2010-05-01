@@ -3,7 +3,7 @@
 ;围棋游戏
  
 (ns Personal.Gerry.GoGame 
-  (:use [clojure.contrib seq-utils duck-streams])
+  (:use [clojure.contrib seq io])
   (:require [clojure.zip :as zip])
   (:import (java.awt Color Graphics Insets Font Graphics2D BasicStroke Image Canvas Dimension RenderingHints BorderLayout)
 	   (javax.swing.border BevelBorder)
@@ -141,7 +141,7 @@
 (defn stone-to-idgroup [groups id-of-neighbors id]  ;put playing stone to groups
        (into []
 	 (for [s groups] 
-	   (if (includes? s id-of-neighbors)(conj s id) s))))
+	   (if (seq-contains? s id-of-neighbors)(conj s id) s))))
 
 (defn stone-to-group [stone] ;; same color group
   (let [idss (get-neighbors-id stone)
@@ -154,8 +154,8 @@
 	  (swap! white-id-groups stone-to-idgroup id (:id stone)))))))
 
 (defn merge-inner-idgroups [groups id] ;id  is new playing stone id,maybe cause to merge groups 
-  (let [with-out-id  (filter #(not (includes? % id)) groups)
-        with-id  (filter #(includes? % id) groups)]
+  (let [with-out-id  (filter #(not (seq-contains? % id)) groups)
+        with-id  (filter #(seq-contains? % id) groups)]
    (if (empty? with-out-id) [(vec (set (flatten with-id)))]
        (conj (into [] with-out-id) (vec (set (flatten with-id)))))))
 
@@ -261,7 +261,7 @@
 	      snapshots (atom [])]
       (play-one-stone aid loc)
       (let [grp (if (odd? aid) @black-id-groups @white-id-groups) ]
-	(if (includes? (map liberty-of-group-real grp) 0) true false))))
+	(if (seq-contains? (map liberty-of-group-real grp) 0) true false))))
 					   
 						  
 	    
