@@ -25,7 +25,8 @@
 
 (def whole-lists (ref [])) ; use as saving all played stones stones ,includes captured stones 按序储存所有已下棋子包括死子
 
-(defstruct stone :id :loc :liberty)  ;loc is {:x,:y} liberty default to nil, if 0,then it's captured.死子气为0
+;(defstruct stone :id :loc :liberty)  ;loc is {:x,:y} liberty default to nil, if 0,then it's captured.死子气为0
+(defrecord stone [id loc liberty]) ; test defrecord
 
 (def data (atom {:players {:w nil :b nil} :qipu nil :result nil :comments {}  :handicap nil})) ;; data will be saved in disks
 (def game-comments (atom {}))
@@ -192,7 +193,7 @@
     (if (not (empty? deadstones))
        (doseq [id (flatten deadstones)]
 	 (let [loc (getloc-from-id id)]
-	  (dosync ( alter whole-lists assoc (dec id) (struct stone id loc 0))))))))
+	  (dosync ( alter whole-lists assoc (dec id) (stone.  id loc 0))))))))
 
 (defn test-content [msg]   ;;debug 
   (if *debug*
@@ -203,10 +204,10 @@
 	(println "dead blacks: " @w-captured-groups)
 	(println "dead whites: " @b-captured-groups))))
 
-(defstruct snapshot :id :lists :bgroups :wgroups :bdead-grpus :wdead-groups)
+(defrecord snapshot [id lists bgroups wgroups bdead-grpus wdead-groups])
 
 (defn save-snapshot [id lists bg wg bdg wdg]
-  (let [snap (struct snapshot id lists bg wg bdg wdg)]
+  (let [snap (snapshot. id lists bg wg bdg wdg)]
     (swap! snapshots conj snap)))
 
 (defn reset-snaps []
@@ -237,7 +238,7 @@
 (declare dead-point?)
 
 (defn play-one-stone [number loc]
-  (let [s (struct stone number loc)
+  (let [s (stone.  number loc nil)
 	groups (if (odd? number) black-id-groups white-id-groups)]
     (stone-to-group s)
     (merge-inner-groups groups number)
