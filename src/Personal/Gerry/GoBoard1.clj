@@ -203,8 +203,8 @@
 			      len (count comm)]
 			  (if (> len 1) (add-to-comments @id comm)))
 			(if (even? @id)
-			  (.setIcon #^JButton w-b-button (ImageIcon. "images/gogui-black-24x24.png"))
-			  (.setIcon #^JButton w-b-button (ImageIcon. "images/gogui-white-24x24.png")))))))))))))
+			  (.setIcon #^JButton w-b-button (ImageIcon. (get-res "images/gogui-black-24x24.png")))
+			  (.setIcon #^JButton w-b-button (ImageIcon. (get-res "images/gogui-white-24x24.png"))))))))))))))
 						  ;(.repaint #^JPanel board)
 						  
 
@@ -332,7 +332,7 @@
     (.add jt button5)
     (.addSeparator jt)
     (.add jt #^JButton w-b-button)))
-(def w-b-button (JButton. (ImageIcon. "images/clojure2.png")))
+(def w-b-button (JButton. (ImageIcon. (get-res "images/clojure2.png"))))
  
 (def toolbar (JToolBar. "oops"))
 
@@ -364,7 +364,7 @@
 	  (.add #^JPanel aux-board BorderLayout/EAST)
     	  (.pack) 
 	  (.setDefaultCloseOperation JFrame/EXIT_ON_CLOSE)
-	  (.setIconImage (.createImage (Toolkit/getDefaultToolkit) "images/clojure-icon.gif"))
+	  (.setIconImage (.createImage (Toolkit/getDefaultToolkit) (get-res "images/clojure-icon.gif")))
 	  (.setVisible true)))
 
 		      

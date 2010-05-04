@@ -10,9 +10,9 @@
 (def aux-board2 (JPanel.))
 (def aux-board3 (JPanel.))
 
-(def white-player(JLabel. ((get-players-name @data) :w) (ImageIcon. "w24.png") JLabel/LEFT))
-(def black-player (JLabel. ((get-players-name @data) :b) (ImageIcon. "b24.png") JLabel/RIGHT))
-(def vs-player (JLabel. (get-result @data) (ImageIcon. "8.gif") JLabel/CENTER))
+(def white-player (JLabel. ((get-players-name @data) :w) (ImageIcon. (get-res "images1/w24.png")) JLabel/LEFT))
+(def black-player (JLabel. ((get-players-name @data) :b) (ImageIcon. (get-res "images1/b24.png")) JLabel/RIGHT))
+(def vs-player (JLabel. (get-result @data) (ImageIcon. (get-res "images1/8.gif")) JLabel/CENTER))
 ;(.setBorder white-player (BorderFactory/createLineBorder Color/lightGray 2))
 ;(.setBorder black-player (BorderFactory/createLineBorder Color/black 2))
 
@@ -50,12 +50,12 @@
    (.setText #^JLabel vs-player r)
    (when r (.setIcon #^JLabel vs-player nil)
 	(when (not= (.indexOf #^String (get-result @data) "white") -1) 
-	  (.setIcon #^JLabel white-player (ImageIcon. "smile.gif")))
+	  (.setIcon #^JLabel white-player (ImageIcon. (get-res  "images1/smile.gif"))))
 	(when (not= (.indexOf #^String (get-result @data) "black") -1) 
-	  (.setIcon #^JLabel black-player (ImageIcon. "smile.gif"))))
-   (when-not r (.setIcon #^JLabel vs-player (ImageIcon. "8.gif"))
-	    (.setIcon #^JLabel white-player (ImageIcon. "w24.png"))
-	    (.setIcon #^JLabel black-player (ImageIcon. "b24.png")))
+	  (.setIcon #^JLabel black-player (ImageIcon. (get-res "images1/smile.gif")))))
+   (when-not r (.setIcon #^JLabel vs-player (ImageIcon. (get-res "images1/8.gif")))
+	    (.setIcon #^JLabel white-player (ImageIcon. (get-res "images1/w24.png")))
+	    (.setIcon #^JLabel black-player (ImageIcon. (get-res  "images1/b24.png"))))
    (inc v)))
 
 ;(defn set-comment []
