@@ -4,7 +4,7 @@
  
 (ns Personal.Gerry.GoGame 
   (:use [clojure.contrib seq io])
-  (:require [clojure.zip :as zip])
+ ; (:require [clojure.zip :as zip])
   (:import (java.awt Color Graphics Insets Font Graphics2D BasicStroke Image Canvas Dimension RenderingHints BorderLayout)
 	   (javax.swing.border BevelBorder)
 	   (javax.swing JFrame JPanel BorderFactory) (java.awt.event MouseAdapter MouseEvent ActionEvent)
@@ -53,6 +53,8 @@
 ;      (set! *warn-on-reflection* false)))
 
 ;(reflect-warn)
+(defn seq-contains? [coll x]
+  (if (some (fn [y] (= y x)) coll) true false))
 
 (defn reset-data []
   (swap! data assoc :players {:w nil :b nil} :qipu nil :result nil :comments [] :handicap nil))
@@ -183,6 +185,19 @@
 (defn remove-dead-stones [groups]
   (swap! groups scan-groups-liberty))
 
+(defn load-resource
+  [name]
+  (let [rsc-name (str "images/" name)
+        thr (Thread/currentThread)
+        ldr (.getContextClassLoader thr)]
+    (.getResourceAsStream ldr rsc-name)))
+
+(defn get-resource [path]
+ (.getResourceAsStream (clojure.lang.RT/baseLoader)  path))
+
+(defn get-res [path]
+  (.getResource (clojure.lang.RT/baseLoader) path))
+
 (defn move-dead-stones [groups back]  ;move dead stones to back vector
   (let [ids (flatten (get-dead-ids groups))]
     (when (not (empty? ids))
@@ -245,6 +260,8 @@
     (dosync
      (alter whole-lists conj s))
     ;(test-content "before mark and remove")
+    (println "the classpath is " (System/getProperty "java.class.path"))
+    (println "the res is " (ClassLoader/getSystemResource "/images/clojure"))
     (let [groups (if (odd? number) white-id-groups black-id-groups)
 	  back (if (odd? number) b-captured-groups w-captured-groups)]
       (move-dead-stones @groups back)

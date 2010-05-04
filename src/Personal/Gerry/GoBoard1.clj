@@ -1,4 +1,4 @@
- ;;go game gui file
+;;go game gui file
 
 (in-ns 'Personal.Gerry.GoGame)
 (import '(java.awt Container Image MediaTracker Toolkit)
@@ -42,7 +42,7 @@
        (get-snapshot (inc @id))
        (when-let [comm (get-from-comments (inc @id))] (.setText #^JTextArea msg-area comm))
        (.repaint #^JFrame this))
-				      
+	  		      
      (when (.equals (.getActionCommand e) "last")
        (get-snapshot (count @snapshots))
        (when-let [comm (get-from-comments (count @snapshots))] (.setText #^JTextArea msg-area comm))
@@ -111,9 +111,12 @@
 	   extent (range u (* u 20) u)
 	   coords (for [x extent y extent] {:x x :y y})
 	   last-stone (last @whole-lists)
-	   backimg (ImageIO/read (File. (str "images" file-separator @backimg-name)))
-	   bimg (ImageIO/read (File. (str "stones" file-separator "blk.png")))
-	   wimg (ImageIO/read (File. (str "stones" file-separator "hyuga2.png")))]
+	   ;backimg (ImageIO/read (File. (str  "/images" file-separator @backimg-name)))
+	   backimg (ImageIO/read (get-resource (str "images/" @backimg-name)))
+	   ;bimg (ImageIO/read (File. (str  "/stones" file-separator "blk.png")))
+	   bimg (ImageIO/read (get-resource "stones/blk.png"))
+	   ;wimg (ImageIO/read (File. (str "/stones" file-separator "hyuga2.png")))
+	   wimg (ImageIO/read (get-resource "stones/hyuga2.png"))]
        (doto g2d
 	 (.setRenderingHint  RenderingHints/KEY_ANTIALIASING RenderingHints/VALUE_ANTIALIAS_ON)
 	 ;(.draw3DRect  0 0 w w true)
@@ -175,6 +178,7 @@
 
 (.addMouseListener #^JPanel board 
     (proxy [MouseAdapter] []
+
       (mousePressed [#^MouseEvent e]
 	(when (= (count @snapshots) (count @whole-lists))
 	  (println {:x (.getX e) :y (.getY e)}) ;debug
@@ -308,7 +312,7 @@
 	button (JButton.)]
     (.setActionCommand button actioncommand)
     (.addActionListener button main-window) ;;wait to add 
-    (.setIcon button (ImageIcon. img-loc))
+    (.setIcon button (ImageIcon. (get-res img-loc)))
     button))
 (declare w-b-button)
 (defn addButtons [#^JToolBar jt]
