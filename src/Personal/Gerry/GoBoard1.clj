@@ -308,7 +308,7 @@
 
 
 (defn navigate-button [imagename actioncommand tooltiptext alttext]
-  (let [ img-loc (str "images" file-separator imagename ".png")
+  (let [ img-loc (str "images/"  imagename ".png")
 	button (JButton.)]
     (.setActionCommand button actioncommand)
     (.addActionListener button main-window) ;;wait to add 
