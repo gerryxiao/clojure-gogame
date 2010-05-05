@@ -196,7 +196,8 @@
  (.getResourceAsStream (clojure.lang.RT/baseLoader)  path))
 
 (defn get-res [path]
-  (.getResource (clojure.lang.RT/baseLoader) path))
+  (let [ res   (.getResource (clojure.lang.RT/baseLoader) path) ]
+    (if res res (println "can't find res of " path))))
 
 (defn move-dead-stones [groups back]  ;move dead stones to back vector
   (let [ids (flatten (get-dead-ids groups))]
